@@ -1757,7 +1757,27 @@
     function fD(d){var m=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];var dt=new Date(d+'T00:00:00');return dt.getDate()+' '+m[dt.getMonth()]+' '+dt.getFullYear()}
     function fH(id){return S.habits.find(function(h){return h.id===id})}
     function cD(h){var c=0;Object.keys(h.days).forEach(function(k){if(h.days[k]==='done')c++});return c}
-    function cS(h){var s=0,d=new Date();if(!h.days[td()])d.setDate(d.getDate()-1);for(var i=0;i<365;i++){var x=ds(d);if(x<h.createdAt)break;if(h.days[x]==='done'){s++;d.setDate(d.getDate()-1)}else if(h.days[x]==='paused'){d.setDate(d.getDate()-1)}else break}return s}
+    // Seri hesabi: bugunden geriye dogru tarar.
+    // - 'done' gun seriyi buyutur (planli olmayan bir gunde isaretlendiyse de sayilir)
+    // - 'paused' gun seriyi ne buyutur ne bozar
+    // - Bu aliskanlik icin planli olmayan gun (hafta ici / ozel program) atlanir;
+    //   hafta sonu tatili artik seriyi sifirlamaz
+    // - Bunlarin disinda isaretsiz veya 'missed' bir gun seriyi bitirir
+    function cS(h){
+      var s=0,d=new Date();
+      if(!h.days[td()])d.setDate(d.getDate()-1);
+      // Atlanan gunler de dongu adimi harcadigi icin ust sinir genis:
+      // haftada tek gunluk bir aliskanlikta ~3 yillik seriye yeter.
+      for(var i=0;i<1100;i++){
+        var x=ds(d);
+        if(x<h.createdAt)break;
+        if(h.days[x]==='done'){s++;d.setDate(d.getDate()-1);continue}
+        if(h.days[x]==='paused'){d.setDate(d.getDate()-1);continue}
+        if(!isScheduledDay(h,x)){d.setDate(d.getDate()-1);continue}
+        break;
+      }
+      return s;
+    }
     var _toastTm=null;
     function toast(m){if(_toastTm)clearTimeout(_toastTm);var t=document.getElementById('sToast');t.textContent=m;t.classList.add('show');_toastTm=setTimeout(function(){t.classList.remove('show');_toastTm=null},2400)}
     function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
