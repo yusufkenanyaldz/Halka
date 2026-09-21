@@ -948,27 +948,49 @@
   function fmtCode(c){c=c||'';return c.length===6?c.slice(0,3)+'-'+c.slice(3):c}
 
   // Create room
+  // Kullanilmayan bir oda kodu bul. Guvenlik kurali artik var olan bir kodun
+  // ustune yazmayi reddediyor; eskiden cakisma sessizce baska bir odanin
+  // kodunu caliyor ve o odayi erisilmez birakiyordu.
+  function findFreeCode(tries,cb,err){
+    var code=genRoomCode();
+    fbDB.ref('codes/'+code).once('value').then(function(s){
+      if(s.val()){
+        if(tries>1)return findFreeCode(tries-1,cb,err);
+        return err(new Error('Kod üretilemedi, tekrar dene'));
+      }
+      cb(code);
+    }).catch(err);
+  }
+
   function createRoom(type){
     if(!fbConnected){toast('İnternet bağlantısı gerekli');return}
-    var roomId=gid();var code=genRoomCode();
-    var roomData={
-      type:type,code:code,createdAt:td(),createdBy:fbUser.uid,
-      members:{}
-    };
-    roomData.members[fbUser.uid]={
-      name:S.user.name,avatar:S.user.avatar||'book',
-      joinedAt:td(),role:'owner'
-    };
-    fbDB.ref('rooms/'+roomId).set(roomData).then(function(){
-      fbDB.ref('codes/'+code).set({roomId:roomId,type:type,createdAt:td()});
-      S.roomId=roomId;S.roomCode=code;S.roomType=type;sv();
-      toast('Oda oluşturuldu!');spConf();
-      // Oda oluşturuldu → alışkanlık seçme adımına geç
-      showShareHabits();
-    }).catch(function(e){toast('Hata: '+e.message)});
+    var fail=function(e){toast('Oda oluşturulamadı: '+((e&&e.message)||e))};
+    findFreeCode(5,function(code){
+      var roomId=gid();
+      var roomData={
+        type:type,code:code,createdAt:td(),createdBy:fbUser.uid,
+        members:{}
+      };
+      roomData.members[fbUser.uid]={
+        name:S.user.name,avatar:S.user.avatar||'book',
+        joinedAt:td(),role:'owner'
+      };
+      // Once oda, sonra kod: kural kodun sahibini rooms/<id>/createdBy
+      // uzerinden dogruluyor, yani oda olmadan kod yazilamiyor.
+      fbDB.ref('rooms/'+roomId).set(roomData).then(function(){
+        return fbDB.ref('codes/'+code).set({roomId:roomId,type:type,createdAt:td()});
+      }).then(function(){
+        S.roomId=roomId;S.roomCode=code;S.roomType=type;sv();
+        toast('Oda oluşturuldu!');spConf();
+        // Oda oluşturuldu → alışkanlık seçme adımına geç
+        showShareHabits();
+      }).catch(fail);
+    },fail);
   }
 
   // Join room by code
+  function roomCapacity(type){return type==='couple'?2:6}
+
   function joinRoom(code){
     if(!fbConnected){toast('İnternet bağlantısı gerekli');return}
     code=code.replace(/[^A-Z0-9]/gi,'').toUpperCase();
@@ -976,24 +998,35 @@
     fbDB.ref('codes/'+code).once('value').then(function(snap){
       var data=snap.val();
       if(!data){toast('Kod bulunamadı');return}
-      var roomId=data.roomId;
-      // Check member count
-      fbDB.ref('rooms/'+roomId+'/members').once('value').then(function(mSnap){
-        var members=mSnap.val()||{};
-        var count=Object.keys(members).length;
-        var type=data.type;
-        if(type==='couple'&&count>=2){toast('Bu oda dolu (2/2)');return}
-        if(type==='family'&&count>=6){toast('Bu oda dolu (6/6)');return}
-        // Join
-        var memberData={name:S.user.name,avatar:S.user.avatar||'book',joinedAt:td(),role:'member'};
-        fbDB.ref('rooms/'+roomId+'/members/'+fbUser.uid).set(memberData).then(function(){
-          S.roomId=roomId;S.roomCode=code;S.roomType=type;sv();
-          toast('Odaya katıldın!');spConf();
-          startRoomListener();
-          // Odaya katıldı → kendi paylaşacağı alışkanlıkları seçsin
-          showShareHabits();
-        });
-      });
+      var roomId=data.roomId,type=data.type;
+      // Uye listesi artik katilmadan once okunamiyor: o listeyi herkese acmak
+      // odanin kodunu da gorunur kilardi. Bu yuzden once katiliyoruz, kapasiteyi
+      // sonra kontrol ediyoruz.
+      // memberData'daki 'code' alani kurala "bu odanin kodunu biliyorum"
+      // kanitidir; kod tutmazsa yazma reddedilir.
+      var memberData={name:S.user.name,avatar:S.user.avatar||'book',joinedAt:td(),role:'member',code:code};
+      fbDB.ref('rooms/'+roomId+'/members/'+fbUser.uid).set(memberData).then(function(){
+        // Kapasite: guvenlik kurallari cocuk sayamadigi icin sunucuda
+        // zorlanamiyor. Uye olduktan sonra listeyi okuyup asildiysa geri cikiyoruz.
+        return fbDB.ref('rooms/'+roomId+'/members').once('value').then(function(mSnap){
+          var count=Object.keys(mSnap.val()||{}).length;
+          var cap=roomCapacity(type);
+          if(count>cap){
+            return fbDB.ref('rooms/'+roomId+'/members/'+fbUser.uid).remove().then(function(){
+              toast('Bu oda dolu ('+cap+'/'+cap+')');
+              return null;
+            });
+          }
+          return true;
+        }).catch(function(){return true}); // sayim okunamazsa katilmayi bozma
+      }).then(function(joined){
+        if(!joined)return;
+        S.roomId=roomId;S.roomCode=code;S.roomType=type;sv();
+        toast('Odaya katıldın!');spConf();
+        startRoomListener();
+        // Odaya katıldı → kendi paylaşacağı alışkanlıkları seçsin
+        showShareHabits();
+      }).catch(function(e){toast('Odaya katılınamadı: '+((e&&e.message)||e))});
     }).catch(function(e){toast('Hata: '+e.message)});
   }
 
