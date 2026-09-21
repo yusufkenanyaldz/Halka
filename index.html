@@ -1757,22 +1757,45 @@
     function fD(d){var m=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];var dt=new Date(d+'T00:00:00');return dt.getDate()+' '+m[dt.getMonth()]+' '+dt.getFullYear()}
     function fH(id){return S.habits.find(function(h){return h.id===id})}
     function cD(h){var c=0;Object.keys(h.days).forEach(function(k){if(h.days[k]==='done')c++});return c}
+    // Tur kapaninca h.days sifirlanip eski gunler h.history icine tasiniyor.
+    // Seri gunleri turdan bagimsiz saymak zorunda, o yuzden gun durumunu
+    // once icinde bulunulan turdan, yoksa tamamlanmis turlardan okuyoruz.
+    function dayState(h,x){
+      if(h.days&&h.days[x])return h.days[x];
+      var hist=h.history;
+      if(!hist||!hist.length)return null;
+      for(var i=hist.length-1;i>=0;i--){
+        var r=hist[i];
+        if(r&&r.days&&r.days[x])return r.days[x];
+      }
+      return null;
+    }
+    // Serinin geriye gidebilecegi en eski tarih: ilk turun baslangici.
+    function streakFloor(h){
+      var f=h.createdAt,hist=h.history;
+      if(hist)for(var i=0;i<hist.length;i++){
+        var c=hist[i]&&hist[i].createdAt;
+        if(c&&c<f)f=c;
+      }
+      return f;
+    }
     // Seri hesabi: bugunden geriye dogru tarar.
     // - 'done' gun seriyi buyutur (planli olmayan bir gunde isaretlendiyse de sayilir)
     // - 'paused' gun seriyi ne buyutur ne bozar
     // - Bu aliskanlik icin planli olmayan gun (hafta ici / ozel program) atlanir;
     //   hafta sonu tatili artik seriyi sifirlamaz
     // - Bunlarin disinda isaretsiz veya 'missed' bir gun seriyi bitirir
+    // - Tur kapanisi seriyi kirmaz; gunler tamamlanmis turlardan okunmaya devam eder
     function cS(h){
-      var s=0,d=new Date();
-      if(!h.days[td()])d.setDate(d.getDate()-1);
-      // Atlanan gunler de dongu adimi harcadigi icin ust sinir genis:
+      var s=0,d=new Date(),floor=streakFloor(h);
+      if(!dayState(h,td()))d.setDate(d.getDate()-1);
+      // Atlanan gunler dongu adimi harcadigi icin ust sinir genis:
       // haftada tek gunluk bir aliskanlikta ~3 yillik seriye yeter.
       for(var i=0;i<1100;i++){
-        var x=ds(d);
-        if(x<h.createdAt)break;
-        if(h.days[x]==='done'){s++;d.setDate(d.getDate()-1);continue}
-        if(h.days[x]==='paused'){d.setDate(d.getDate()-1);continue}
+        var x=ds(d),st=dayState(h,x);
+        if(x<floor)break;
+        if(st==='done'){s++;d.setDate(d.getDate()-1);continue}
+        if(st==='paused'){d.setDate(d.getDate()-1);continue}
         if(!isScheduledDay(h,x)){d.setDate(d.getDate()-1);continue}
         break;
       }
