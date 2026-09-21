@@ -1757,6 +1757,27 @@
     function fD(d){var m=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];var dt=new Date(d+'T00:00:00');return dt.getDate()+' '+m[dt.getMonth()]+' '+dt.getFullYear()}
     function fH(id){return S.habits.find(function(h){return h.id===id})}
     function cD(h){var c=0;Object.keys(h.days).forEach(function(k){if(h.days[k]==='done')c++});return c}
+    // cD() bilerek yalniz icinde bulunulan turu sayar: hedef yuzdesi ve
+    // "x/hedef" sayaci her turda sifirdan baslamali.
+    // cDAll() ise tum turlar boyunca 'done' isaretli benzersiz gun sayisidir;
+    // omur boyu birikenler (puan, toplam tamamlanan) bunu kullanir.
+    // Tarihler tekillestiriliyor: turun kapandigi gun hem gecmis tur
+    // kaydinda hem yeni turda bulunabilir, iki kez sayilmamali.
+    function cDAll(h){
+      var seen={},c=0;
+      function take(map){
+        if(!map)return;
+        Object.keys(map).forEach(function(k){
+          if(seen[k])return;
+          seen[k]=1;
+          if(map[k]==='done')c++;
+        });
+      }
+      take(h.days);
+      var hist=h.history;
+      if(hist)for(var i=hist.length-1;i>=0;i--){if(hist[i])take(hist[i].days)}
+      return c;
+    }
     // Tur kapaninca h.days sifirlanip eski gunler h.history icine tasiniyor.
     // Seri gunleri turdan bagimsiz saymak zorunda, o yuzden gun durumunu
     // once icinde bulunulan turdan, yoksa tamamlanmis turlardan okuyoruz.
@@ -2382,8 +2403,9 @@
     function calcXP(){
       var xp=0;
       S.habits.forEach(function(h){
-        // Her done gün = 10 XP
-        Object.keys(h.days).forEach(function(k){if(h.days[k]==='done')xp+=10});
+        // Her done gün = 10 XP — tamamlanmış turlar dâhil.
+        // Sadece h.days'e bakılırsa tur kapanışında bu puan siliniyordu.
+        xp+=cDAll(h)*10;
         // Mevcut streak bonus = streak × 2
         var s=cS(h);xp+=s*2;
         // Tur tamamlama = 100 XP per tur
@@ -3257,14 +3279,16 @@
     function renderStats(){
       var b=document.getElementById('stBox'),hs=_selfHabits();
       if(!hs.length){b.innerHTML='<div class="empty"><p>Alışkanlık ekleyip tamamlamaya başla,<br>İstatistiklerin burada görünecek.</p><button class="btn btn-p btn-sm" onclick="navTo(\'main\')">Ana Sayfaya Dön</button></div>';return}
-      var html='',tD=0,tT=0,best=0,tR=0;
-      hs.forEach(function(h){var d=cD(h);tD+=d;tT+=h.targetDays;var s=cS(h);if(s>best)best=s;tR+=(h.round-1)});
+      // tD: icinde bulunulan tur (Genel ilerleme yuzdesi icin)
+      // tDAll: tum turlar (Toplam tamamlanan icin) — tur kapaninca sifirlanmaz
+      var html='',tD=0,tDAll=0,tT=0,best=0,tR=0;
+      hs.forEach(function(h){var d=cD(h);tD+=d;tDAll+=cDAll(h);tT+=h.targetDays;var s=cS(h);if(s>best)best=s;tR+=(h.round-1)});
       // Level card
       var xp=calcXP(),lv=getLevel(xp);
       html+='<div class="sc" style="background:linear-gradient(135deg,'+lv.bg+',var(--sf));border-color:'+lv.color.replace(')',',0.2)').replace('var(','rgba(')+'"><div style="display:flex;align-items:center;gap:14px;margin-bottom:10px"><div style="width:48px;height:48px;border-radius:50%;background:'+lv.bg+';border:2px solid '+lv.color+';display:flex;align-items:center;justify-content:center"><span class="i" style="width:24px;height:24px;color:'+lv.color+'">'+IC.star+'</span></div><div style="flex:1"><div style="font-size:18px;font-weight:900;color:'+lv.color+'">'+lv.name+'</div><div style="font-size:12px;color:var(--tx2)">'+xp+' XP</div></div></div>';
       html+='<div style="height:6px;background:var(--sf2);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+lv.progress+'%;background:'+lv.color+';border-radius:3px;transition:width .6s"></div></div>';
       html+='<div style="font-size:11px;color:var(--tx3);margin-top:6px;text-align:right">'+(lv.nextName?(lv.nextXp-xp)+' XP → '+lv.nextName:'Maksimum seviye!')+'</div></div>';
-      html+='<div class="sc"><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--mint)">'+IC.check+'</span>Toplam tamamlanan</span><span class="sv">'+(tD>0?tD+' gün':'—')+'</span></div><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--honey)">'+IC.fire+'</span>En uzun seri</span><span class="sv">'+(best>0?best+' gün':'—')+'</span></div><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--honey)">'+IC.trophy+'</span>Tamamlanan turlar</span><span class="sv">'+tR+'</span></div><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--lav)">'+IC.target+'</span>Genel ilerleme</span><span class="sv">%'+(tT>0?Math.min(100,Math.round(tD/tT*100)):0)+'</span></div></div>';
+      html+='<div class="sc"><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--mint)">'+IC.check+'</span>Toplam tamamlanan</span><span class="sv">'+(tDAll>0?tDAll+' gün':'—')+'</span></div><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--honey)">'+IC.fire+'</span>En uzun seri</span><span class="sv">'+(best>0?best+' gün':'—')+'</span></div><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--honey)">'+IC.trophy+'</span>Tamamlanan turlar</span><span class="sv">'+tR+'</span></div><div class="sr"><span class="sl"><span class="i i-m" style="color:var(--lav)">'+IC.target+'</span>Genel ilerleme</span><span class="sv">%'+(tT>0?Math.min(100,Math.round(tD/tT*100)):0)+'</span></div></div>';
       // Weekly chart
       html+='<div class="sc"><div class="stt">Bu Hafta</div><div class="wc">';
       var wk=['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];var now=new Date(),ndow=now.getDay();ndow=ndow===0?6:ndow-1;
