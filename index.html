@@ -1698,7 +1698,52 @@
         });
       });
     }
-    function sv(){try{localStorage.setItem(SK,JSON.stringify(S));pushWidgetData();fbSyncShared();}catch(e){toast('Depolama dolu!')}}
+    // Son kaydetme denemesinin sonucu: null | 'full' | 'blocked'.
+    // Kaydetme basarisiz olursa degisiklikler yalniz bellekte kalir ve sayfa
+    // yenilenince kaybolur. 2.4 saniyelik bir toast bunu anlatmaya yetmiyor,
+    // bu yuzden checkStorageUsage() kalici bir uyari seridi de gosteriyor.
+    var _saveErr=null;
+
+    // Kaydetme neden basarisiz oldu? "Yer yok" ile "tarayici izin vermiyor"
+    // farkli sorunlar ve farkli cozumleri var.
+    function _saveFailKind(e){
+      try{
+        // Daha once kaydedebilmisiz demek ki depolama calisiyor: sorun yer darligi.
+        if(localStorage.getItem(SK))return'full';
+      }catch(_){return'blocked'}
+      var quotaName=!!(e&&(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED'||e.code===22||e.code===1014));
+      try{
+        // Hic kayit yok: minik bir yazma gecerse depolama acik, veri cok buyuk.
+        localStorage.setItem('__halka_probe','1');localStorage.removeItem('__halka_probe');
+        return quotaName?'full':'blocked';
+      }catch(_){return'blocked'}
+    }
+
+    function sv(){
+      var ok=true;
+      try{
+        localStorage.setItem(SK,JSON.stringify(S));
+        if(_saveErr){_saveErr=null;checkStorageUsage()}
+      }catch(e){
+        ok=false;
+        var first=!_saveErr;
+        _saveErr=_saveFailKind(e);
+        // Her kaydetmede toast yagdirmayalim; serit zaten ekranda duruyor.
+        if(first){
+          toast(_saveErr==='full'?'Depolama dolu — değişiklik kaydedilmedi'
+                                 :'Kaydedilemedi — tarayıcı depolamayı engelliyor');
+          checkStorageUsage();
+        }
+        console.warn('Kaydetme basarisiz:',e);
+      }
+      // Bu ikisi kaydetmenin parcasi degil. Eskiden ucu de tek try/catch
+      // icindeydi: Firebase veya widget koprusunden gelen herhangi bir hata
+      // kullaniciya "Depolama dolu!" diye gosteriliyor, ustelik biri patlayinca
+      // digeri hic calismiyordu.
+      try{pushWidgetData()}catch(e){console.warn('Widget verisi gonderilemedi:',e)}
+      try{fbSyncShared()}catch(e){console.warn('Oda senkronizasyonu basarisiz:',e)}
+      return ok;
+    }
 
     // ===== WIDGET TAMAMLAMA KÖPRÜSÜ =====
     // Uygulama açıkken widget'tan gelen anlık tamamlama
@@ -2530,10 +2575,19 @@
     // ===== ÖZELLİK 4: LOCALSTORAGE TEMİZLEME =====
     function checkStorageUsage(){
       try{
-        var data=localStorage.getItem(SK)||'';
-        var kb=Math.round(data.length/1024);
         var el=document.getElementById('storageWarnArea');
         if(!el)return;
+        // Kaydetme fiilen basarisizsa bu, dolmaya yaklasma uyarisindan onceliklidir.
+        if(_saveErr==='full'){
+          el.innerHTML='<div class="storage-warn">⚠️ Depolama dolu, değişikliklerin kaydedilmiyor. <span style="text-decoration:underline;cursor:pointer;font-weight:700;margin-left:4px" onclick="cleanStorage()">Yer aç</span></div>';
+          return;
+        }
+        if(_saveErr==='blocked'){
+          el.innerHTML='<div class="storage-warn">⚠️ Tarayıcı kaydetmeyi engelliyor. Değişikliklerin bu sekme kapanınca kaybolur. Gizli sekmedeysen normal sekmede aç.</div>';
+          return;
+        }
+        var data=localStorage.getItem(SK)||'';
+        var kb=Math.round(data.length/1024);
         if(kb>4000){
           el.innerHTML='<div class="storage-warn">⚠️ Depolama dolmak üzere ('+kb+'KB). <span style="text-decoration:underline;cursor:pointer;font-weight:700;margin-left:4px" onclick="cleanStorage()">Temizle</span></div>';
         } else {
