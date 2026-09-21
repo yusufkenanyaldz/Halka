@@ -1709,7 +1709,7 @@
       if(dateStr!==todayS)return;
       if(h.days[todayS]==='done')return;
       h.days[todayS]='done';
-      sv();renderMain();checkMilestone(h);
+      sv();renderMain(); // hedef/kilometre tasi kontrolu renderMain icinde
       toast((h.type==='quit'?'Temiz kaldın':'Tamamlandı')+' (Widget)');
       spConf();
     }
@@ -2071,6 +2071,7 @@
         }
         emp.style.display='block';sec.style.display='none'}
       else{emp.style.display='none';sec.style.display='block'}
+      checkGoals();
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -2857,8 +2858,6 @@
       var prev=h.days[td()];
       h.days[td()]='done';sv();
       showU(h.type==='gain'?'Tamamlandı olarak kaydedildi':'Temiz kaldım olarak kaydedildi',function(){if(prev)h.days[td()]=prev;else delete h.days[td()];sv();renderMain()});
-      if(cD(h)>=h.targetDays){celeb(h)}
-      else{setTimeout(function(){checkMilestone(h)},200)}
       // Room all-done confetti
       if(_isShared(h)){var sh=_sharedHabits();if(sh.length>0&&sh.every(function(x){return x.days[td()]==='done'})){setTimeout(spConf,300)}}
       setTimeout(function(){var fl=document.getElementById('flash-'+id);if(fl){fl.style.background=h.color;fl.classList.add('go')}renderMain()},80);
@@ -2878,11 +2877,32 @@
       h.days[dStr]=st;sv();
       var label=st==='done'?(h.type==='quit'?'Temiz kaldım kaydedildi':'Yaptım kaydedildi'):(h.type==='quit'?'Düştüm kaydedildi':'Yapmadım kaydedildi');
       showU(label,function(){if(prev)h.days[dStr]=prev;else delete h.days[dStr];sv();renderMain()});
-      setTimeout(renderMain,50);
+      setTimeout(renderMain,50); // renderMain icindeki checkGoals hedefe ulasildiysa kutlamayi acar
     }
     function showU(msg,fn){if(uTm)clearTimeout(uTm);uD=fn;var el=document.getElementById('uToast');document.getElementById('uMsg').textContent=msg;var f=document.getElementById('uFill');f.style.transition='none';f.style.width='100%';el.classList.add('show');requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.transition='width 5s linear';f.style.width='0%'})});uTm=setTimeout(function(){el.classList.remove('show');uD=null},5000)}
     function doUndo(){if(uD){uD();uD=null}if(uTm)clearTimeout(uTm);document.getElementById('uToast').classList.remove('show');toast('Geri alındı')}
 
+    // Hedefe ulasildi mi? Hedefe hangi yoldan ulasildigi fark etmemeli:
+    // bugunu isaretlemek, gecmis bir gunu doldurmak (bfY), widget'tan gelen
+    // tamamlama, ya da joker hakkinin bir gunu 'done' yapmasi. Eskiden yalniz
+    // mkDn kontrol ediyordu; diger yollarda tur hic kapanmiyor, halka
+    // hedefin uzerinde takili kaliyordu.
+    // renderMain sonunda cagriliyor; gun isaretleyen her yol renderMain'den
+    // gectigi icin tek nokta yetiyor.
+    function checkGoals(){
+      if(!S||!S.habits||!S.habits.length)return;
+      var ov=document.getElementById('cOv');
+      // Acik bir kutlama varsa yenisini acma: ov.dataset.hid ezilirse
+      // ilk aliskanligin turu hic kapanmaz. Kapaninca zincir devam eder.
+      if(ov&&ov.classList.contains('show'))return;
+      var act=S.habits.filter(function(h){return!h.archived});
+      for(var i=0;i<act.length;i++){
+        if(cD(act[i])>=act[i].targetDays){celeb(act[i]);return}
+      }
+      var ms=document.getElementById('msOv');
+      if(ms&&ms.classList.contains('show'))return;
+      for(var j=0;j<act.length;j++){if(checkMilestone(act[j]))return}
+    }
     function celeb(h){if(uTm){clearTimeout(uTm);uTm=null}uD=null;document.getElementById('uToast').classList.remove('show');var ov=document.getElementById('cOv');document.getElementById('cT').textContent='Tebrikler!';document.getElementById('cM').textContent=h.name+' hedefini tamamladın! Halkan altın renge dönüyor.';ov.classList.add('show');ov.dataset.hid=h.id;spConf()}
     function closeC(){var ov=document.getElementById('cOv'),h=fH(ov.dataset.hid);ov.classList.remove('show');if(h){
       // Save round history
