@@ -1757,6 +1757,10 @@
     function fD(d){var m=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];var dt=new Date(d+'T00:00:00');return dt.getDate()+' '+m[dt.getMonth()]+' '+dt.getFullYear()}
     function fH(id){return S.habits.find(function(h){return h.id===id})}
     function cD(h){var c=0;Object.keys(h.days).forEach(function(k){if(h.days[k]==='done')c++});return c}
+    // NOT: Belirli bir tarihi gosteren her gorunum (haftalik hedef, haftalik
+    // grafikler, haftalik ozet) gunu dayState() ile okur. h.days tur kapanisinda
+    // sifirlandigi icin dogrudan okuyan yerler o haftanin gecmisini kaybediyordu.
+    // Tur bazli kalmasi gerekenler (hedef yuzdesi, tur takvimi) cD()/h.days kullanir.
     // cD() bilerek yalniz icinde bulunulan turu sayar: hedef yuzdesi ve
     // "x/hedef" sayaci her turda sifirdan baslamali.
     // cDAll() ise tum turlar boyunca 'done' isaretli benzersiz gun sayisidir;
@@ -1791,8 +1795,8 @@
       }
       return null;
     }
-    // Serinin geriye gidebilecegi en eski tarih: ilk turun baslangici.
-    function streakFloor(h){
+    // Aliskanligin ilk turunun baslangic tarihi (tarihe dayali her gorunumun alt siniri).
+    function hStart(h){
       var f=h.createdAt,hist=h.history;
       if(hist)for(var i=0;i<hist.length;i++){
         var c=hist[i]&&hist[i].createdAt;
@@ -1808,7 +1812,7 @@
     // - Bunlarin disinda isaretsiz veya 'missed' bir gun seriyi bitirir
     // - Tur kapanisi seriyi kirmaz; gunler tamamlanmis turlardan okunmaya devam eder
     function cS(h){
-      var s=0,d=new Date(),floor=streakFloor(h);
+      var s=0,d=new Date(),floor=hStart(h);
       if(!dayState(h,td()))d.setDate(d.getDate()-1);
       // Atlanan gunler dongu adimi harcadigi icin ust sinir genis:
       // haftada tek gunluk bir aliskanlikta ~3 yillik seriye yeter.
@@ -2354,7 +2358,7 @@
         var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+i);
         var dStr=ds(d);
         if(dStr>td())break;
-        var anyDone=hs.some(function(h){return h.days[dStr]==='done'});
+        var anyDone=hs.some(function(h){return dayState(h,dStr)==='done'});
         if(anyDone)doneDays++;
       }
       var goal=S.weeklyGoal;
@@ -3292,7 +3296,7 @@
       // Weekly chart
       html+='<div class="sc"><div class="stt">Bu Hafta</div><div class="wc">';
       var wk=['Pt','Sa','Ça','Pe','Cu','Ct','Pz'];var now=new Date(),ndow=now.getDay();ndow=ndow===0?6:ndow-1;
-      for(var i=0;i<7;i++){var d=new Date(now);d.setDate(d.getDate()-ndow+i);var dStr=ds(d),cnt=0;hs.forEach(function(h){if(h.days[dStr]==='done')cnt++});var ht=hs.length>0?(cnt/hs.length*72):0;var col=i<=ndow?'var(--lav)':'var(--sf2)';var op=dStr===td()?'1':'.55';html+='<div class="wb" style="height:'+Math.max(4,ht)+'px;background:'+col+';opacity:'+op+'"><span class="wl">'+wk[i]+'</span></div>'}
+      for(var i=0;i<7;i++){var d=new Date(now);d.setDate(d.getDate()-ndow+i);var dStr=ds(d),cnt=0;hs.forEach(function(h){if(dayState(h,dStr)==='done')cnt++});var ht=hs.length>0?(cnt/hs.length*72):0;var col=i<=ndow?'var(--lav)':'var(--sf2)';var op=dStr===td()?'1':'.55';html+='<div class="wb" style="height:'+Math.max(4,ht)+'px;background:'+col+';opacity:'+op+'"><span class="wl">'+wk[i]+'</span></div>'}
       html+='</div></div>';
       // Week comparison
       var thisW=getWeekData(0),lastW=getWeekData(1);var maxW=Math.max.apply(null,thisW.concat(lastW))||1;
@@ -3496,10 +3500,10 @@
     function getFreezeCount(h){if(!h.freezeUsed)return 0;var ws=getWeekStart(td());var cnt=0;Object.keys(h.freezeUsed).forEach(function(k){if(getWeekStart(k)===ws)cnt++});return cnt}
 
     function checkWeeklySummary(){if(!S.ob||!S.habits.length)return;var now=new Date();if(now.getDay()!==0)return;var key='wksum_'+getWeekStart(td());if(!S.wkSumSeen)S.wkSumSeen={};if(S.wkSumSeen[key])return;renderWeeklySummary()}
-    function renderWeeklySummary(){var hs=_selfHabits();var ws=getWeekStart(td());var totalDone=0,totalPossible=0;hs.forEach(function(h){for(var i=0;i<7;i++){var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+i);var dStr=ds(d);if(dStr<=td()&&dStr>=h.createdAt){totalPossible++;if(h.days[dStr]==='done')totalDone++}}});if(totalPossible<2)return;var pct=Math.round(totalDone/totalPossible*100);var bestH='',bestS=0;hs.forEach(function(h){var s=cS(h);if(s>bestS){bestS=s;bestH=h.name}});var el=document.getElementById('wkSumArea');el.innerHTML='<div class="wk-sum"><div class="wk-sum-title">Bu Haftanın Özeti</div><div class="wk-sum-row"><span class="wk-sum-label">Tamamlanan</span><span class="wk-sum-val">'+totalDone+'/'+totalPossible+'</span></div><div class="wk-sum-row"><span class="wk-sum-label">Başarı Oranı</span><span class="wk-sum-val">%'+pct+'</span></div>'+(bestH?'<div class="wk-sum-row"><span class="wk-sum-label">En İyi Seri</span><span class="wk-sum-val">'+esc(bestH)+' ('+bestS+' gün)</span></div>':'')+'<button class="wk-sum-close" onclick="closeWkSum()">Tamam</button></div>'}
+    function renderWeeklySummary(){var hs=_selfHabits();var ws=getWeekStart(td());var totalDone=0,totalPossible=0;hs.forEach(function(h){for(var i=0;i<7;i++){var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+i);var dStr=ds(d);if(dStr<=td()&&dStr>=hStart(h)){totalPossible++;if(dayState(h,dStr)==='done')totalDone++}}});if(totalPossible<2)return;var pct=Math.round(totalDone/totalPossible*100);var bestH='',bestS=0;hs.forEach(function(h){var s=cS(h);if(s>bestS){bestS=s;bestH=h.name}});var el=document.getElementById('wkSumArea');el.innerHTML='<div class="wk-sum"><div class="wk-sum-title">Bu Haftanın Özeti</div><div class="wk-sum-row"><span class="wk-sum-label">Tamamlanan</span><span class="wk-sum-val">'+totalDone+'/'+totalPossible+'</span></div><div class="wk-sum-row"><span class="wk-sum-label">Başarı Oranı</span><span class="wk-sum-val">%'+pct+'</span></div>'+(bestH?'<div class="wk-sum-row"><span class="wk-sum-label">En İyi Seri</span><span class="wk-sum-val">'+esc(bestH)+' ('+bestS+' gün)</span></div>':'')+'<button class="wk-sum-close" onclick="closeWkSum()">Tamam</button></div>'}
     function closeWkSum(){var key='wksum_'+getWeekStart(td());if(!S.wkSumSeen)S.wkSumSeen={};S.wkSumSeen[key]=true;sv();document.getElementById('wkSumArea').innerHTML=''}
 
-    function getWeekData(offset){var hs=_selfHabits();var now=new Date();var ndow=now.getDay();ndow=ndow===0?6:ndow-1;var weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-ndow-offset*7);var data=[];for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(d.getDate()+i);var dStr=ds(d);var cnt=0;hs.forEach(function(h){if(h.days[dStr]==='done')cnt++});data.push(cnt)}return data}
+    function getWeekData(offset){var hs=_selfHabits();var now=new Date();var ndow=now.getDay();ndow=ndow===0?6:ndow-1;var weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-ndow-offset*7);var data=[];for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(d.getDate()+i);var dStr=ds(d);var cnt=0;hs.forEach(function(h){if(dayState(h,dStr)==='done')cnt++});data.push(cnt)}return data}
 
     // Drag reorder
     var dragSrcIdx=null,dragActive=false,longPressTimer=null;
