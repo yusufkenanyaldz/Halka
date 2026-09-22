@@ -1723,6 +1723,11 @@
         if(typeof h.paused==='undefined')h.paused=false;
         if(typeof h.archived==='undefined')h.archived=false;
       });
+      // Ayni kimlikten iki aliskanlik varsa (eski ice aktarma hatasi) fH() hep
+      // ilkini bulur, digerine ulasilamaz. Ilki kimligini korur, digerine yeni verilir.
+      var seenId={},fixedId=false;
+      S.habits.forEach(function(h){while(seenId[h.id]){h.id=gid();fixedId=true}seenId[h.id]=true});
+      if(fixedId)sv();
       if(S.ob){goScreen('main');document.getElementById('bnav').style.display='flex'}
       else{goScreen('ob1');setTimeout(animD,600);spawnParticles()}      // Firebase auth — SDK hazır olunca başlat
       _onFbReady(function(){
@@ -3355,7 +3360,7 @@
       }
       h.paused=false;delete h.pausedAt;sv();toast(h.name+' devam ediyor');renderDet(id)}
     function archiveH(id){if(!confirm('Bu alışkanlığı arşivlemek istediğine emin misin? Veriler korunur, ana ekrandan gizlenir.'))return;var h=fH(id);if(!h)return;h.archived=true;if(h.reminder)cancelNotif(h);sv();toast(h.name+' arşivlendi');goScreen('main')}
-    function unarchiveH(id){var h=fH(id);if(!h)return;h.archived=false;sv();toast(h.name+' geri yüklendi');renderSet()}
+    function unarchiveH(id){var h=fH(id);if(!h)return;if(S.habits.filter(function(x){return!x.archived}).length>=MX){toast('En fazla '+MX+' aktif alışkanlık olabilir, önce birini arşivle');return}h.archived=false;sv();toast(h.name+' geri yüklendi');renderSet()}
     function impD(){
       var inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
       inp.onchange=function(e){
@@ -3374,13 +3379,39 @@
             if(mode==='replace'){
               S=data;
             } else {
-              // Merge: add habits that don't exist by name
+              // Birlestir: ayni adli aliskanlik atlanir.
+              // Kimlik cakisirsa gelene yeni kimlik verilir. Yoksa fH() hep ilkini
+              // bulur, ikincisi acilamaz/isaretlenemez olur (ornek: yedek alinip
+              // aliskanlik yeniden adlandirilmis, sonra eski yedek birlestirilmis).
+              // Sinir (MX) doluysa gelen aliskanlik silinmez, arsive eklenir.
               var existing=S.habits.map(function(h){return h.name.toLowerCase()});
+              var ids={};S.habits.forEach(function(h){ids[h.id]=true});
+              var actN=S.habits.filter(function(h){return!h.archived}).length;
+              var idMap={},added=0,skipped=0,toArch=0;
               data.habits.forEach(function(h){
-                if(existing.indexOf(h.name.toLowerCase())<0){S.habits.push(h);existing.push(h.name.toLowerCase())}
+                if(!h||typeof h!=='object'||!h.name)return;
+                if(existing.indexOf(h.name.toLowerCase())>=0){skipped++;return}
+                var oldId=h.id;
+                while(!h.id||ids[h.id])h.id=gid();
+                ids[h.id]=true;
+                if(oldId&&!idMap.hasOwnProperty(oldId))idMap[oldId]=h.id;
+                if(!h.archived){if(actN>=MX){h.archived=true;toArch++}else actN++}
+                S.habits.push(h);existing.push(h.name.toLowerCase());added++;
               });
-              // Merge other settings
-              if(data.milestones){if(!S.milestones)S.milestones={};Object.keys(data.milestones).forEach(function(k){S.milestones[k]=data.milestones[k]})}
+              // Kilometre taslari: anahtar 'ms_<kimlik>_<gun>_<tur>'. Yalniz eklenen
+              // aliskanliklarinkini al, yeni kimlige tasi; yoksa mevcut bir
+              // aliskanligin kutlamasini susturabilir.
+              if(data.milestones){if(!S.milestones)S.milestones={};Object.keys(data.milestones).forEach(function(k){
+                var m=/^ms_(.+)_(\d+)_(\d+)$/.exec(k);
+                if(!m||!idMap.hasOwnProperty(m[1]))return;
+                S.milestones['ms_'+idMap[m[1]]+'_'+m[2]+'_'+m[3]]=data.milestones[k];
+              })}
+              if(skipped||toArch){
+                var msg=added+' alışkanlık eklendi.';
+                if(skipped)msg+='\n'+skipped+' tanesi aynı adla zaten olduğu için atlandı.';
+                if(toArch)msg+='\n'+toArch+' tanesi '+MX+' alışkanlık sınırı dolu olduğu için arşive eklendi. Ayarlar\'daki arşivden birini çıkarıp yerine geri alabilirsin.';
+                alert(msg);
+              }
             }
             // Re-init with migrated data
             S.v=S.v||2;

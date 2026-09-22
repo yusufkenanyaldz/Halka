@@ -36,7 +36,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (7 takım, 119 senaryo)
+bash tests/calistir.sh            # uygulama testleri (8 takım, 144 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
