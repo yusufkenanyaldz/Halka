@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Halka — Alışkanlık Takibi",
+  "short_name": "Halka",
+  "description": "Alışkanlıklarını iç içe halkalara dönüştür. Her gün bir adım, her halka bir zafer.",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e0e1a",
+  "theme_color": "#0e0e1a",
+  "categories": ["health", "lifestyle", "productivity"],
+  "icons": [
+    { "src": "icons/halka-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/halka-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/halka-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

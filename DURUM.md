@@ -18,9 +18,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `2cfd4ca` | Firebase güvenlik kuralları yazıldı, oda akışı kurallara uyarlandı. |
 | `133cb0f` | Yedek birleştirmede kimlik çakışması. Yeniden adlandırılmış alışkanlığın eski yedeği aynı kimlikle ekleniyordu, "Spor"u işaretlemek "Koşu"yu işaretliyordu. Artık gelene yeni kimlik veriliyor, kilometre taşları taşınıyor, açılışta eski bozulma onarılıyor. 8 sınırını aşanlar arşive ekleniyor; arşivden geri alma da sınırı aşamıyor. |
 
-| (son commit) | Firebase yarım inerse oda özelliği sessizce ölüyordu. Ana kütüphane inip alt modül inmeyince yedek kod patlıyor (`enableLogging`), `_fbDone` hiç true olmuyordu; ilk ekrandan "Katıl" hiçbir şey yapmıyordu. Artık modüller tek tek yedek CDN'den deneniyor, eksik kalırsa sahte bağlantı `window.firebase`'e dokunmadan kuruluyor, geç inen SDK'ya kendiliğinden geçiliyor. Mesaj artık sebebi söylüyor: cihaz çevrimiçiyken "İnternet bağlantısı gerekli" yerine "Oda sunucusuna bağlanılamadı". |
+| `f11eca9` | Firebase yarım inerse oda özelliği sessizce ölüyordu. Ana kütüphane inip alt modül inmeyince yedek kod patlıyor (`enableLogging`), `_fbDone` hiç true olmuyordu; ilk ekrandan "Katıl" hiçbir şey yapmıyordu. Artık modüller tek tek yedek CDN'den deneniyor, eksik kalırsa sahte bağlantı `window.firebase`'e dokunmadan kuruluyor, geç inen SDK'ya kendiliğinden geçiliyor. Mesaj artık sebebi söylüyor: cihaz çevrimiçiyken "İnternet bağlantısı gerekli" yerine "Oda sunucusuna bağlanılamadı". |
 
-Testler: uygulama için 169 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Çevrimdışı ve kurulum. Yazı tipleri Google yerine `fonts/`'tan geliyor (Türkçe harfler dahil). `manifest.webmanifest` ve simgeler eklendi, Chrome manifesti hatasız okuyor. `sw.js` uygulamayı önbelleğe alıyor: sunucu kapalıyken açılıyor, şebeke cevap vermezse 4 saniyede önbellekten açılıyor, çevrimiçiyken yeni sürüm hemen geliyor. |
+
+Testler: uygulama için 196 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -38,20 +40,26 @@ Yani her şey kapalı, oda özelliği beş aydır çalışmıyor. Gizlilik riski
 
 Öncelik sırasına yakın:
 
-1. **Çevrimdışı eksik.** Servis çalışanı ve uygulama tanım dosyası yok, yazı tipi
-   Google'dan çekiliyor. Telefona kurulabilir olması için ikisi de gerekli.
-2. **Bildirimler tarayıcıda çalışmıyor.** Dakikada bir tam saat eşleşmesi aranıyor,
+1. **Bildirimler tarayıcıda çalışmıyor.** Dakikada bir tam saat eşleşmesi aranıyor,
    arka planda zamanlayıcı kısılınca o dakika kaçıyor. Ayrıca planlı günleri yok sayıyor.
    Android köprüsü varsa sorun yok.
-3. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
+2. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
    hafta sonu da paydaya giriyor, oran olduğundan düşük çıkıyor.
-4. **320 piksel ekranda halka yer kaplıyor.** SVG sabit 270 piksel, küçültülmüyor.
+3. **320 piksel ekranda halka yer kaplıyor.** SVG sabit 270 piksel, küçültülmüyor.
    Günün listesine ulaşmak için boş bir halkayı geçip kaydırmak gerekiyor.
-5. **Küçük tutarsızlıklar.** Sabit metinde "0 / 5 seçildi" yazıyor ama sınır 8.
+4. **Küçük tutarsızlıklar.** Sabit metinde "0 / 5 seçildi" yazıyor ama sınır 8.
    Bildirim balonu karşılama yazısının üstüne biniyor. Reddedilen davetler için yerel
    depoya sürekli anahtar yazılıyor, hiç temizlenmiyor. Partner özetindeki toplam
    paylaşılanları değil bütün alışkanlıkları sayıyor. İstatistiklerdeki "En uzun seri"
    aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
+
+## Yayın hakkında bir not
+
+Servis çalışanı ve kurulum yalnız uygulama **https** üzerinden sunulunca çalışır
+(GitHub Pages, Firebase Hosting vb.). Dosyayı doğrudan açınca (`file://`) sessizce
+atlanır, yazı tipleri yine de depodan yüklenir. Android uygulaması `index.html`'i
+nasıl yüklüyorsa öyle çalışmaya devam eder; `fonts/` ve `icons/` klasörleri de
+uygulamanın içine kopyalanmalı, yoksa yazı tipi sistemdekine düşer.
 
 ## Kapasite hakkında bir not
 

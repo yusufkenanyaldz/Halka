@@ -1,7 +1,7 @@
 # Halka
 
-Alışkanlık takip uygulaması. Tek dosya: `index.html` (HTML + CSS + JS, derleme adımı yok).
-Tarayıcıda dosyayı açarak çalışır. Android'de `HalkaBridge` adlı bir JS köprüsü varsa
+Alışkanlık takip uygulaması. Kodun tamamı tek dosyada: `index.html` (HTML + CSS + JS,
+derleme adımı yok). Tarayıcıda dosyayı açarak çalışır. Android'de `HalkaBridge` adlı bir JS köprüsü varsa
 bildirim ve widget özellikleri devreye girer, yoksa sessizce atlanır.
 
 ## Yapı
@@ -10,6 +10,14 @@ Her şey `index.html` içinde:
 - `<style>` bölümü: tema değişkenleri `:root` altında, açık tema `body.light` ile
 - `<body>`: ekranlar `.screen` sınıfıyla, `goScreen()` ile değiştirilir
 - `<script>`: önce Firebase/oda kodu, sonra ana uygulama
+
+Yanındaki dosyalar (kod değil, varlık):
+- `fonts/` — DM Sans ve Playfair Display, `@font-face` ile `index.html` başında.
+- `icons/`, `manifest.webmanifest` — telefona kurulum. Simgeler `araclar/simge_uret.js` ile üretilir.
+- `sw.js` — servis çalışanı, çevrimdışı açılış. Yalnız http(s) altında kaydolur;
+  `file://` ile açınca atlanır. `index.html` önce ağdan gelir, sürüm artırmak gerekmez.
+  **Yazı tipi, simge ya da manifest değişirse `sw.js`'deki `SURUM`'u artır**, yoksa
+  kullanıcıda eskisi kalır. Yeni bir kabuk dosyası eklersen `KABUK` listesine de yaz.
 
 Veri `localStorage`'da tek anahtarda tutulur (`halka_v2`), `S` global nesnesi.
 Oda (partner) özelliği Firebase Realtime Database kullanır.
@@ -36,7 +44,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (9 takım, 169 senaryo)
+bash tests/calistir.sh            # uygulama testleri (10 takım, 196 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -64,7 +72,10 @@ Bunların hepsi bu depoda gerçekten yaşandı:
 5. **Sayfa `load` olayını bekleme.** Firebase betikleri dinamik ekleniyor; asılı
    kalan bir betik `load`'u bekletir. Firebase CDN'lerini taklit eden testlerde
    `goto(url,{waitUntil:'domcontentloaded'})` kullan (bkz. `tests/test_fbload.js`).
-6. **Düzeneği sına.** Kuralları kasten açıp testlerin kırmızıya döndüğünü gör.
+6. **Çevrimdışını `setOffline` ile taklit etme.** Servis çalışanının isteklerini her
+   zaman kesmiyor, test sahte geçer. `tests/test_offline.js` yerel sunucuyu gerçekten
+   kapatıyor; zayıf şebeke için isteği cevapsız bırakıyor.
+7. **Düzeneği sına.** Kuralları kasten açıp testlerin kırmızıya döndüğünü gör.
    Geçen bir test, bir şey ölçtüğünü kanıtlamaz.
 
 ## Firebase
