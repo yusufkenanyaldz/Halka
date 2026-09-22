@@ -1,0 +1,8 @@
+node_modules/
+tests/firebase/node_modules/
+tests/firebase/package.json
+tests/firebase/package-lock.json
+tests/firebase/database-debug.log
+tests/firebase/firebase-debug.log
+tests/firebase/*.jar
+.firebase/
