@@ -36,7 +36,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (8 takım, 144 senaryo)
+bash tests/calistir.sh            # uygulama testleri (9 takım, 169 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -61,7 +61,10 @@ Bunların hepsi bu depoda gerçekten yaşandı:
 4. **Joker (freeze) özelliği.** `autoMiss()` işaretsiz bir geçmiş günü haftalık joker
    hakkıyla "done" yapabilir. Test kurgusunda boşluk bırakırsan sayılar kayar;
    `h.createdAt`'i ilk işaretli güne eşitle ya da `h.freezeUsed` ile o günü kapat.
-5. **Düzeneği sına.** Kuralları kasten açıp testlerin kırmızıya döndüğünü gör.
+5. **Sayfa `load` olayını bekleme.** Firebase betikleri dinamik ekleniyor; asılı
+   kalan bir betik `load`'u bekletir. Firebase CDN'lerini taklit eden testlerde
+   `goto(url,{waitUntil:'domcontentloaded'})` kullan (bkz. `tests/test_fbload.js`).
+6. **Düzeneği sına.** Kuralları kasten açıp testlerin kırmızıya döndüğünü gör.
    Geçen bir test, bir şey ölçtüğünü kanıtlamaz.
 
 ## Firebase

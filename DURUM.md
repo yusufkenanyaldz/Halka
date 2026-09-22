@@ -16,9 +16,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `f4ebaf0` | Kutlama sadece "bugünü işaretle" yolunda tetikleniyordu. Geriye dönük doldurma, widget ve joker yollarında tur hiç kapanmıyordu. |
 | `6077cd2` | Kaydetme hatası mesajı yanıltıcıydı. Firebase hatası "Depolama dolu!" diye gösteriliyordu. |
 | `2cfd4ca` | Firebase güvenlik kuralları yazıldı, oda akışı kurallara uyarlandı. |
-| (son commit) | Yedek birleştirmede kimlik çakışması. Yeniden adlandırılmış alışkanlığın eski yedeği aynı kimlikle ekleniyordu, "Spor"u işaretlemek "Koşu"yu işaretliyordu. Artık gelene yeni kimlik veriliyor, kilometre taşları taşınıyor, açılışta eski bozulma onarılıyor. 8 sınırını aşanlar arşive ekleniyor; arşivden geri alma da sınırı aşamıyor. |
+| `133cb0f` | Yedek birleştirmede kimlik çakışması. Yeniden adlandırılmış alışkanlığın eski yedeği aynı kimlikle ekleniyordu, "Spor"u işaretlemek "Koşu"yu işaretliyordu. Artık gelene yeni kimlik veriliyor, kilometre taşları taşınıyor, açılışta eski bozulma onarılıyor. 8 sınırını aşanlar arşive ekleniyor; arşivden geri alma da sınırı aşamıyor. |
 
-Testler: uygulama için 144 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Firebase yarım inerse oda özelliği sessizce ölüyordu. Ana kütüphane inip alt modül inmeyince yedek kod patlıyor (`enableLogging`), `_fbDone` hiç true olmuyordu; ilk ekrandan "Katıl" hiçbir şey yapmıyordu. Artık modüller tek tek yedek CDN'den deneniyor, eksik kalırsa sahte bağlantı `window.firebase`'e dokunmadan kuruluyor, geç inen SDK'ya kendiliğinden geçiliyor. Mesaj artık sebebi söylüyor: cihaz çevrimiçiyken "İnternet bağlantısı gerekli" yerine "Oda sunucusuna bağlanılamadı". |
+
+Testler: uygulama için 169 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -36,20 +38,16 @@ Yani her şey kapalı, oda özelliği beş aydır çalışmıyor. Gizlilik riski
 
 Öncelik sırasına yakın:
 
-1. **Firebase yarım yüklenirse oda özelliği sessizce ölüyor.** Ana kütüphane inip alt
-   modüller inemezse `_fbMock()` hata veriyor, `_fbDone` hiç true olmuyor, `fbInit()`
-   çalışmıyor. Kullanıcı "İnternet bağlantısı gerekli" görüyor, oysa interneti var.
-   Konsolda: `Cannot set properties of undefined (setting 'enableLogging')`.
-2. **Çevrimdışı eksik.** Servis çalışanı ve uygulama tanım dosyası yok, yazı tipi
+1. **Çevrimdışı eksik.** Servis çalışanı ve uygulama tanım dosyası yok, yazı tipi
    Google'dan çekiliyor. Telefona kurulabilir olması için ikisi de gerekli.
-3. **Bildirimler tarayıcıda çalışmıyor.** Dakikada bir tam saat eşleşmesi aranıyor,
+2. **Bildirimler tarayıcıda çalışmıyor.** Dakikada bir tam saat eşleşmesi aranıyor,
    arka planda zamanlayıcı kısılınca o dakika kaçıyor. Ayrıca planlı günleri yok sayıyor.
    Android köprüsü varsa sorun yok.
-4. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
+3. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
    hafta sonu da paydaya giriyor, oran olduğundan düşük çıkıyor.
-5. **320 piksel ekranda halka yer kaplıyor.** SVG sabit 270 piksel, küçültülmüyor.
+4. **320 piksel ekranda halka yer kaplıyor.** SVG sabit 270 piksel, küçültülmüyor.
    Günün listesine ulaşmak için boş bir halkayı geçip kaydırmak gerekiyor.
-6. **Küçük tutarsızlıklar.** Sabit metinde "0 / 5 seçildi" yazıyor ama sınır 8.
+5. **Küçük tutarsızlıklar.** Sabit metinde "0 / 5 seçildi" yazıyor ama sınır 8.
    Bildirim balonu karşılama yazısının üstüne biniyor. Reddedilen davetler için yerel
    depoya sürekli anahtar yazılıyor, hiç temizlenmiyor. Partner özetindeki toplam
    paylaşılanları değil bütün alışkanlıkları sayıyor. İstatistiklerdeki "En uzun seri"

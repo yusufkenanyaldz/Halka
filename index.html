@@ -837,13 +837,41 @@
   // firebase tanımlı değilse mock devreye girer — uygulama hiç takılmaz.
   var fbUser=null,fbConnected=false,fbAuth=null,fbDB=null;
   var _fbDone=false,_fbCbs=[];
+  // _fbReal: gercek SDK kuruldu. _fbLoadErr: kutuphane eksik indi / hic inmedi.
+  // _fbAuthErr: anonim giris reddedildi. _fbReinit: gec inen SDK icin yeniden baglan (init() kurar).
+  var _fbReal=false,_fbLoadErr=false,_fbAuthErr=null,_fbReinit=null;
   function _onFbReady(cb){if(_fbDone)cb();else _fbCbs.push(cb);}
-  function _fbFire(){_fbDone=true;_fbCbs.forEach(function(f){try{f();}catch(e){}});_fbCbs=[];}
+  function _fbFire(){_fbDone=true;var cbs=_fbCbs;_fbCbs=[];cbs.forEach(function(f){try{f();}catch(e){}});}
 
+  // Sahte baglanti: window.firebase'e dokunmaz. Eskiden yarim inmis
+  // window.firebase'in ustune yazmaya calisiyordu; database modulu yoksa
+  // "firebase.database.enableLogging" patliyor, _fbFire hic cagrilmiyordu.
   function _fbMock(){
     var _r={set:function(){return Promise.resolve()},update:function(){return Promise.resolve()},remove:function(){return Promise.resolve()},once:function(){return Promise.resolve({val:function(){return null}})},on:function(){return function(){}},off:function(){}};
-    if(!window.firebase)window.firebase={initializeApp:function(){},auth:function(){return{signInAnonymously:function(){return Promise.reject(new Error('offline'))},useDeviceLanguage:function(){},onAuthStateChanged:function(){}}},database:function(){return{ref:function(){return _r}}}};
-    firebase.database.enableLogging=function(){};
+    fbAuth={signInAnonymously:function(){return Promise.reject(new Error('offline'))},useDeviceLanguage:function(){},onAuthStateChanged:function(){}};
+    fbDB={ref:function(){return _r}};
+  }
+  function _fbComplete(){return!!(window.firebase&&typeof firebase.initializeApp==='function'&&typeof firebase.auth==='function'&&typeof firebase.database==='function')}
+  // Kutuphane tamsa gercek, degilse sahte baglanti kur. Ne olursa olsun _fbFire.
+  function _fbSetup(){
+    if(_fbReal)return;
+    if(_fbComplete()){
+      try{
+        firebase.initializeApp(firebaseConfig);
+        if(firebase.database.enableLogging)firebase.database.enableLogging(false);
+        fbAuth=firebase.auth();fbDB=firebase.database();
+        _fbReal=true;_fbLoadErr=false;
+      }catch(e){console.warn('Firebase başlatılamadı:',e.message)}
+    }
+    if(!_fbReal){_fbLoadErr=true;_fbMock()}
+    // Zaman asiminda sahteyle acilmistik, SDK sonradan tamamlandi: yeniden baglan
+    else if(_fbDone&&_fbReinit)_fbReinit();
+    if(!_fbDone)_fbFire();
+  }
+  // Oda islemi neden yapilamiyor? Cihaz cevrimiciyse sorun internette degil.
+  function fbOfflineMsg(){
+    if(navigator.onLine!==false&&(_fbLoadErr||_fbAuthErr))return'Oda sunucusuna bağlanılamadı. Sayfayı yenileyip tekrar dene.';
+    return'İnternet bağlantısı gerekli';
   }
 
   var firebaseConfig={
@@ -856,7 +884,9 @@
     appId:"1:277200925076:web:223e45adb5e56ebd68df81"
   };
 
-  // CDN listesi: önce gstatic (Android için hızlı), bozulursa jsdelivr
+  // CDN listesi: önce gstatic (Android için hızlı), bozulursa jsdelivr.
+  // Sutunlar: app, auth, database. Her modul ayri ayri denenir; birinin bir
+  // CDN'de inmemesi digerlerini yeniden indirtmez.
   var _fbUrls=[
     ['https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
      'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js',
@@ -865,27 +895,17 @@
      'https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-auth-compat.min.js',
      'https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js']
   ];
-  var _fbTimeout=setTimeout(function(){if(!_fbDone){_fbMock();fbAuth=firebase.auth();fbDB=firebase.database();_fbFire();}},6000);
+  // Zaman asimi: uygulama beklemeden sahteyle acilir; SDK sonradan tamamlanirsa
+  // _fbSetup gercegine gecer.
+  var _fbTimeout=setTimeout(function(){if(!_fbDone)_fbSetup();},6000);
 
-  function _tryLoad(cdnIdx,scriptIdx){
-    if(cdnIdx>=_fbUrls.length){clearTimeout(_fbTimeout);_fbMock();fbAuth=firebase.auth();fbDB=firebase.database();_fbFire();return;}
-    if(scriptIdx>=_fbUrls[cdnIdx].length){
-      // Bu CDN tamam, SDK'yı başlat
-      clearTimeout(_fbTimeout);
-      try{
-        firebase.initializeApp(firebaseConfig);
-        if(firebase.database.enableLogging)firebase.database.enableLogging(false);
-        fbAuth=firebase.auth();fbDB=firebase.database();
-      }catch(e){_fbMock();fbAuth=firebase.auth();fbDB=firebase.database();}
-      _fbFire();return;
-    }
+  function _tryLoad(modIdx,cdnIdx){
+    // Hepsi denendi ya da bu modul hicbir CDN'den inmedi: elde ne varsa onunla kur
+    if(modIdx>=_fbUrls[0].length||cdnIdx>=_fbUrls.length){clearTimeout(_fbTimeout);_fbSetup();return;}
     var s=document.createElement('script');
-    s.src=_fbUrls[cdnIdx][scriptIdx];
-    s.onload=function(){_tryLoad(cdnIdx,scriptIdx+1);};
-    s.onerror=function(){
-      // Bu CDN başarısız, sonrakini dene
-      _tryLoad(cdnIdx+1,0);
-    };
+    s.src=_fbUrls[cdnIdx][modIdx];
+    s.onload=function(){_tryLoad(modIdx+1,0);};
+    s.onerror=function(){_tryLoad(modIdx,cdnIdx+1);};
     document.head.appendChild(s);
   }
   _tryLoad(0,0);
@@ -893,7 +913,7 @@
   function fbInit(){
     return fbAuth.signInAnonymously().then(function(result){
       fbUser=result.user;
-      fbConnected=true;
+      fbConnected=true;_fbAuthErr=null;
       if(!S.uid||S.uid!==fbUser.uid){S.uid=fbUser.uid;sv()}
       // Write user profile to Firebase
       fbDB.ref('users/'+fbUser.uid).update({
@@ -905,7 +925,7 @@
       return fbUser;
     }).catch(function(err){
       console.warn('Firebase auth failed:',err.message);
-      fbConnected=false;
+      fbConnected=false;_fbAuthErr=_fbReal?err:null;
       // Generate local fallback UID
       if(!S.uid)S.uid=gid()+gid();
       return null;
@@ -963,7 +983,7 @@
   }
 
   function createRoom(type){
-    if(!fbConnected){toast('İnternet bağlantısı gerekli');return}
+    if(!fbConnected){toast(fbOfflineMsg());return}
     var fail=function(e){toast('Oda oluşturulamadı: '+((e&&e.message)||e))};
     findFreeCode(5,function(code){
       var roomId=gid();
@@ -992,7 +1012,7 @@
   function roomCapacity(type){return type==='couple'?2:6}
 
   function joinRoom(code){
-    if(!fbConnected){toast('İnternet bağlantısı gerekli');return}
+    if(!fbConnected){toast(fbOfflineMsg());return}
     code=code.replace(/[^A-Z0-9]/gi,'').toUpperCase();
     if(code.length!==6){toast('6 haneli kod gir');return}
     fbDB.ref('codes/'+code).once('value').then(function(snap){
@@ -1730,11 +1750,12 @@
       if(fixedId)sv();
       if(S.ob){goScreen('main');document.getElementById('bnav').style.display='flex'}
       else{goScreen('ob1');setTimeout(animD,600);spawnParticles()}      // Firebase auth — SDK hazır olunca başlat
-      _onFbReady(function(){
+      _fbReinit=function(){
         fbInit().then(function(){
           if(S.roomId)startRoomListener();
         });
-      });
+      };
+      _onFbReady(_fbReinit);
     }
     // Son kaydetme denemesinin sonucu: null | 'full' | 'blocked'.
     // Kaydetme basarisiz olursa degisiklikler yalniz bellekte kalir ve sayfa
@@ -3594,7 +3615,7 @@
         html+='<div class="si" onclick="showJoinRoom()"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--sky)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 10l-5 5-5-5"/><path d="M10 3v12"/></svg></span><span style="font-size:15px;font-weight:600">Koda Katıl</span></div><span style="color:var(--tx3)">›</span></div>';
       }
       // Connection status
-      var statusTxt=fbConnected?'Bağlı':'Çevrimdışı';
+      var statusTxt=fbConnected?'Bağlı':(navigator.onLine!==false&&(_fbLoadErr||_fbAuthErr)?'Sunucuya ulaşılamadı':'Çevrimdışı');
       var statusCol=fbConnected?'var(--mint)':'var(--tx3)';
       html+='<div style="text-align:center;margin-top:12px;font-size:11px;color:var(--tx3)"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+statusCol+';margin-right:4px"></span>'+statusTxt+(S.uid?' · ID: '+S.uid.slice(0,8):'')+'</div>';
       html+='<div style="text-align:center;margin-top:48px;color:var(--tx3);font-size:13px"><div style="font-family:Playfair Display,serif;font-size:18px;font-weight:800;margin-bottom:4px;color:var(--tx3)">Halka</div>v5.0</div>';
