@@ -50,7 +50,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (16 takım, 501 senaryo)
+bash tests/calistir.sh            # uygulama testleri (17 takım, 524 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -134,8 +134,10 @@ Açık gri kutu (`--sf2`/`--sf3`) üzerinde `--tx3` sınırda kalır; orada `--t
 
 ## Dar ekran
 
-`tests/test_tasma.js` 15 ekranı 320, 360 ve 412 piksel genişlikte gezer; kırpılan
-metin, satıra bölünen kısa etiket (en çok 3 kelime) ve sığmayan yer tutucu arar.
+`tests/test_tasma.js` ekranları (`tests/ekranlar.js`) 320, 360 ve 412 piksel genişlikte
+gezer; kırpılan metin, satıra bölünen kısa etiket (en çok 3 kelime), sığmayan yer
+tutucu ve üst üste binen metin/düğme arar. Açılır kapanır bir parça eklersen açık
+hâlini de `EKRANLAR`'a ekle (bkz. `ana-doldur`); yoksa denetim onu hiç görmez.
 - Esnek kutudaki düğmeye `min-width:0` verme: yazısından dar olup `overflow:hidden`
   ile kırpılır. Yer yetmezse satır kırılsın (`flex-wrap:wrap`), yazı kesilmesin.
 - Birden çok parçalı kısa bilgi ("4 gün seri", "16/21"): her parça `white-space:nowrap`,

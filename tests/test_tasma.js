@@ -1,4 +1,5 @@
-// Dar ekranda metin kirpilmasin, kisa etiketler bolunmesin, yer tutucular sigsin.
+// Dar ekranda metin kirpilmasin, kisa etiketler bolunmesin, yer tutucular sigsin,
+// metin baska bir metnin ya da dugmenin ustune binmesin.
 // Android'de yaygin genislikler: 320 (kucuk), 360 (en yaygin), 412.
 // Kullanim: node tests/test_tasma.js [url] [--ayrinti]
 const path=require('path');
@@ -18,6 +19,11 @@ const KALIBRASYON = `<body style="margin:0;font:16px sans-serif;width:360px">
   <div style="width:80px;overflow:hidden"><span style="white-space:nowrap">Atasi kesiyor bunu</span></div>
   <div data-satir="2" style="width:75px">iki satir izinli</div>
   <div data-satir="2" style="width:20px">uc satir fazla</div>
+  <div style="display:flex;width:120px"><span style="flex:1;min-width:0;white-space:nowrap">Pazartesigunu</span><button style="flex-shrink:0">Yaptım</button></div>
+  <div style="display:flex;gap:8px;width:200px"><span>Yan yana</span><button>Tamam</button></div>
+  <div style="display:flex;width:120px"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Kisaltilmis uzun ad metni</span><button style="flex-shrink:0">Ac</button></div>
+  <div style="position:absolute;top:318px;left:10px;font-size:16px;line-height:19px">Sabit menunun altindan gecen</div>
+  <nav style="position:fixed;left:0;right:0;top:330px;height:40px"><button style="width:300px;height:40px">Menu</button></nav>
 </body>`;
 async function kalibrasyon(){
   const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
@@ -35,6 +41,10 @@ async function kalibrasyon(){
     ['DENETIM: atasinin kestigi metin', 'kirpik', tur('Atasi kesiyor')],
     ['DENETIM: data-satir=2 iken 2 satir sayilmaz', 'yok', tur('iki satir izinli')],
     ['DENETIM: data-satir=2 iken 3 satir sayilir', 'bolunmus', tur('uc satir fazla')],
+    ['DENETIM: dugmenin ustune binen metin', 'ustuste', tur('Pazartesigunu')],
+    ['DENETIM: yan yana duran metin ve dugme sayilmaz', 'yok', tur('Yan yana')],
+    ['DENETIM: "..." ile kisaltilip dugmeye degmeyen metin sayilmaz', 'yok', tur('Kisaltilmis')],
+    ['DENETIM: sabit menunun altindan gecen icerik sayilmaz', 'yok', tur('Sabit menunun')],
   ];
 }
 

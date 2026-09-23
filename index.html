@@ -398,11 +398,20 @@
     .ab-done-tap{background:var(--sf2);color:var(--tx2);border:1px solid var(--bd2);padding:10px 14px;display:flex;align-items:center;gap:5px;border-radius:14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0;min-height:44px}
     .ab-done-tap:active{transform:scale(.9);opacity:.6}
     .ab-done-tap .chk{animation:chkPop .5s cubic-bezier(.16,1,.3,1)}
-    /* Yesterday */
-    .yd-bar{margin:-6px 16px 10px;padding:12px 16px;border-radius:0 0 18px 18px;background:var(--honey2);border:1px solid rgba(240,216,142,.08);border-top:none;font-size:13px;color:var(--honey);display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-weight:500}
-    /* Etiket ve eylem grubu kendi icinde bolunmez; sigmazsa eylemler birlikte alt satira iner */
-    .yd-lbl,.yd-eyl{white-space:nowrap}
-    .yd-lk{text-decoration:underline;cursor:pointer;font-weight:700}
+    /* Gecmis gunleri doldurma (ydHtml): kapaliyken kartin altinda tek satir ozet,
+       "Doldur" ile acilir, her gun icin gercek dugmeler (44px). */
+    .yd{margin:-6px 16px 10px;padding:0 6px 0 16px;border-radius:0 0 18px 18px;background:var(--honey2);border:1px solid rgba(240,216,142,.08);border-top:none;font-size:13px;color:var(--honey);font-weight:500}
+    .yd-ust{display:flex;align-items:center;gap:8px;min-height:44px}
+    .yd-ozet{flex:1;min-width:0;display:flex;flex-wrap:wrap;column-gap:4px}
+    .yd-ozet>span{white-space:nowrap}
+    .yd-ac{min-height:44px;padding:0 12px;border:none;background:none;color:var(--honey);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0}
+    .yd-sat{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:6px 10px 8px 0;border-top:1px solid rgba(240,216,142,.12)}
+    /* Gun adi kendi genisliginden dar olamaz (min-width:0 iken 320px'te "Pazartesi"
+       dugmenin ustune biniyordu); sigmazsa dugmeler alt satira iner */
+    .yd-gun{flex:1 0 auto;font-weight:600;white-space:nowrap}
+    .yd-b{min-height:44px;padding:0 12px;border-radius:12px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+    .yd-e{background:var(--mint2);color:var(--mint)}
+    .yd-h{background:var(--coral2);color:var(--coral)}
 
     .empty{text-align:center;padding:64px 32px 48px}
     .empty p{color:var(--tx2);font-size:15px;margin-bottom:28px;line-height:1.6}
@@ -459,7 +468,7 @@
     .wb{flex:1;border-radius:6px 6px 0 0;transition:height .6s cubic-bezier(.16,1,.3,1);min-height:4px;position:relative}
     /* Cubuk rengi ayri katmanda: gelecek gunlerin soluklugu alttaki gun etiketine (.wl) gecmesin */
     .wbf{position:absolute;inset:0;border-radius:inherit}
-    .hc-paused{opacity:.75}.yd-lbl{opacity:.7}
+    .hc-paused{opacity:.75}
     .wb .wl{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--tx3);font-weight:600}
     .badge-r{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px}
     .bi{width:56px;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -623,11 +632,11 @@
     body.light .sch-opt.on{background:rgba(107,79,212,.1);border-color:#6b4fd4;color:#6b4fd4}
     body.light .sch-day.on{background:rgba(107,79,212,.1);border-color:#6b4fd4;color:#6b4fd4}
     body.light .ed-cd.on{border-color:rgba(0,0,0,.5)}
-    body.light .yd-bar{background:rgba(240,216,142,.15);border-color:rgba(240,216,142,.22);color:#7a6010}
+    body.light .yd{background:rgba(240,216,142,.15);border-color:rgba(240,216,142,.22)}
 
     /* Soldurma koyu zeminde okunur kaliyor, acik zeminde metni esigin altina itiyordu
        (duraklatilmis kart 2,3; doldurma etiketi 2,9; arsiv satiri 3,1) */
-    body.light .hc-paused,body.light .yd-lbl{opacity:1}
+    body.light .hc-paused{opacity:1}
     body.light .cal-d.dn.fz{color:#1a1a2e}
     body.light .ring-info-name{color:#111}
     body.light .hc-rg-p{color:#111}
@@ -1553,18 +1562,7 @@
           html+='<div style="padding:8px 0 0 58px;font-size:12px;color:var(--tx3);font-style:italic">Bugün programda yok</div>';
         }
         html+='</div></div>';
-        // Backfill bars (yesterday etc)
-        for(var pd=1;pd<=2;pd++){
-          var pdDate=new Date();pdDate.setDate(pdDate.getDate()-pd);
-          var pdStr=ds(pdDate);
-          if(pdStr<h.createdAt)break;
-          if(!h.days[pdStr]&&isScheduledDay(h,pdStr)){
-            var pdLabel=pd===1?'Dün':'2 gün önce';
-            var pdDone=h.type==='quit'?'Temiz kaldım':'Yaptım';
-            var pdMiss=h.type==='quit'?'Düştüm':'Yapmadım';
-            html+='<div class="yd-bar"><span class="i i-s">'+IC.bolt+'</span> <span class="yd-lbl">'+pdLabel+'</span> <span class="yd-eyl">— <span class="yd-lk" onclick="bfY(\''+h.id+'\',\'done\',\''+pdStr+'\')">'+pdDone+'</span> / <span class="yd-lk" onclick="bfY(\''+h.id+'\',\'missed\',\''+pdStr+'\')">'+pdMiss+'</span></span></div>';
-          }
-        }
+        html+=ydHtml(h);
       });
       html+='</div>';
     } else {
@@ -2993,19 +2991,7 @@
         }
         html+='</div></div>';
         // Geçmiş gün düzeltme — 3 güne kadar, only scheduled days
-        var pastBars='';
-        for(var pd=1;pd<=3;pd++){
-          var pdDate=new Date();pdDate.setDate(pdDate.getDate()-pd);
-          var pdStr=ds(pdDate);
-          if(pdStr<h.createdAt)break;
-          if(!h.days[pdStr]&&isScheduledDay(h,pdStr)){
-            var pdLabel=pd===1?'Dün':pd===2?'2 gün önce':'3 gün önce';
-            var pdDoneLabel=h.type==='quit'?'Temiz kaldım':'Yaptım';
-            var pdMissLabel=h.type==='quit'?'Düştüm':'Yapmadım';
-            pastBars+='<div class="yd-bar" style="'+(pd>1?'border-radius:0;margin-top:-1px':'')+'"><span class="i i-s">'+IC.bolt+'</span> <span class="yd-lbl">'+pdLabel+'</span> <span class="yd-eyl">— <span class="yd-lk" onclick="event.stopPropagation();event.preventDefault();bfY(\''+h.id+'\',\'done\',\''+pdStr+'\')">'+pdDoneLabel+'</span> / <span class="yd-lk" onclick="event.stopPropagation();event.preventDefault();bfY(\''+h.id+'\',\'missed\',\''+pdStr+'\')">'+pdMissLabel+'</span></span></div>';
-          }
-        }
-        if(pastBars)html+=pastBars;
+        html+=ydHtml(h);
       });
       b.innerHTML=html;
       if(!_cardsRendered)_cardsRendered=true;
@@ -3052,6 +3038,38 @@
       showU(h.type==='quit'?'Düştüm olarak kaydedildi':'Yapamadım olarak kaydedildi',function(){if(prev)h.days[td()]=prev;else delete h.days[td()];sv();renderMain()});
       setTimeout(function(){renderMain();setTimeout(function(){shakeCard(id)},20)},50);
     }
+    // Gecmis gunleri doldurma: son 3 gunun bos ve programli gunleri. 3 gunden
+    // eskisini autoMiss zaten isler (yapilmadi ya da joker). Eskiden her gun icin
+    // ayri cubuk ciziliyordu (8 aliskanlikta 23 cubuk, listeye ~970px); artik
+    // aliskanlik basina tek ozet satiri, istenince acilir.
+    var _ydAcik={};
+    var GUN_KISA=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'],GUN_UZUN=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+    function ydGunler(h){
+      var out=[];
+      for(var pd=1;pd<=3;pd++){
+        var d=new Date();d.setDate(d.getDate()-pd);var dStr=ds(d);
+        if(dStr<h.createdAt)break;
+        if(!h.days[dStr]&&isScheduledDay(h,dStr))out.push({s:dStr,pd:pd,g:d.getDay()});
+      }
+      return out;
+    }
+    function ydHtml(h){
+      var gl=ydGunler(h);
+      if(!gl.length){delete _ydAcik[h.id];return''}
+      var acik=!!_ydAcik[h.id];
+      var ad=function(x,uzun){return x.pd===1?'Dün':(uzun?GUN_UZUN:GUN_KISA)[x.g]};
+      var e=h.type==='quit'?['Temiz kaldım','Düştüm']:['Yaptım','Yapmadım'];
+      var o='<div class="yd'+(acik?' acik':'')+'" data-hid="'+h.id+'">';
+      o+='<div class="yd-ust"><span class="i i-s">'+IC.bolt+'</span><span class="yd-ozet"><span>İşaretsiz:</span> <span>'+gl.map(function(x){return ad(x)}).join(', ')+'</span></span>';
+      o+='<button class="yd-ac" aria-expanded="'+acik+'" onclick="event.stopPropagation();ydAc(\''+h.id+'\')">'+(acik?'Kapat':'Doldur')+'</button></div>';
+      if(acik)gl.forEach(function(x){
+        o+='<div class="yd-sat"><span class="yd-gun">'+ad(x,true)+'</span>';
+        o+='<button class="yd-b yd-e" onclick="event.stopPropagation();bfY(\''+h.id+'\',\'done\',\''+x.s+'\')">'+e[0]+'</button>';
+        o+='<button class="yd-b yd-h" onclick="event.stopPropagation();bfY(\''+h.id+'\',\'missed\',\''+x.s+'\')">'+e[1]+'</button></div>';
+      });
+      return o+'</div>';
+    }
+    function ydAc(id){_ydAcik[id]=!_ydAcik[id];if(_activeMode&&_activeMode!=='self')renderRoomMode(_activeMode);else renderMain()}
     function bfY(id,st,dateStr){
       var h=fH(id);if(!h)return;
       var dStr=dateStr||yd();

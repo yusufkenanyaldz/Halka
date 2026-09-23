@@ -5,6 +5,8 @@
 //            ("4 / gun / seri" gibi). Tasarim geregi cok satira izin verilen oge
 //            ya da atasi data-satir="N" tasir (orn. rozet adi: 2); o sinira kadar sayilmaz.
 //  yertutucu: giris kutusunun aciklama metni (placeholder) kutuya sigmiyor
+//  ustuste : bir metin baska bir metnin ya da dugmenin ustune biniyor (kirpilmadan
+//            tasan metin; "Pazartesi" + "Yaptim" gibi)
 // Yatay kaydirilan satirlar (overflow-x:auto/scroll) kirpik sayilmaz.
 // sayfaya enjekte edilir: page.evaluate(TASMA_DENETIM)
 const TASMA_DENETIM = () => {
@@ -40,7 +42,7 @@ const TASMA_DENETIM = () => {
     var ust=[]; [].forEach.call(rg.getClientRects(),function(q){if(q.width<1)return;var y=Math.round(q.top);if(!ust.some(function(u){return Math.abs(u-y)<3}))ust.push(y)});
     return ust.length;
   }
-  var kalanlar=[], toplam=0;
+  var kalanlar=[], toplam=0, kutular=[];
   var yuruyen=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   while(yuruyen.nextNode()){
     var t=yuruyen.currentNode, metin=t.textContent.replace(/\s+/g,' ').trim(); if(!metin)continue;
@@ -49,6 +51,13 @@ const TASMA_DENETIM = () => {
     if(!gorunur(el))continue;
     window.__kdGoruldu.add(t); toplam++;
     var sinif=(typeof el.className==='string'&&el.className)||el.tagName;
+    // Metnin gorunen kutusu: tasmayi gizleyen ata (orn. "..." kisaltmasi) varsa onun
+    // kutusuyla kirpilir; Range gizlenen kismi da sayar.
+    var kirp=null; for(var e=el;e&&e!==document.body;e=e.parentElement){if(/hidden|clip/.test(getComputedStyle(e).overflowX)){kirp=e.getBoundingClientRect();break}}
+    var rg0=document.createRange(); rg0.selectNodeContents(t);
+    [].forEach.call(rg0.getClientRects(),function(q){
+      if(kirp)q={left:Math.max(q.left,kirp.left),right:Math.min(q.right,kirp.right),top:Math.max(q.top,kirp.top),bottom:Math.min(q.bottom,kirp.bottom)};
+      if(q.right-q.left>1&&q.bottom-q.top>1)kutular.push({q:q,el:el,metin:metin})});
     var k=kirpan(el);
     if(k){kalanlar.push({tur:'kirpik',metin:metin.slice(0,40),sinif:sinif,ayrinti:'kutu '+Math.round(k.clientWidth||k.getBoundingClientRect().width)+'px, metin '+k.scrollWidth+'px'});continue}
     var kelime=metin.split(' ').length;
@@ -57,6 +66,23 @@ const TASMA_DENETIM = () => {
       if(n>en)kalanlar.push({tur:'bolunmus',metin:metin.slice(0,40),sinif:sinif,ayrinti:n+' satir'+(izin?' (izin '+en+')':'')});
     }
   }
+  // Ust uste binme: metin-metin ve metin-dugme kutulari (2px'ten fazla kesisim).
+  // Sabit (position:fixed) bir katmandaki oge (alt menu gibi) ile altindan kayan
+  // icerik karsilastirilmaz: kaydirmanin olagan hali.
+  function sabitKatman(e){for(;e&&e!==document.body;e=e.parentElement){if(getComputedStyle(e).position==='fixed')return e}return null}
+  var dugmeler=[].slice.call(document.querySelectorAll('button,[onclick]')).filter(function(d){return gorunur(d)}).map(function(d){return {q:d.getBoundingClientRect(),el:d,sk:sabitKatman(d)}});
+  kutular.forEach(function(k){k.sk=sabitKatman(k.el)});
+  function kes(a,b){var x=Math.min(a.right,b.right)-Math.max(a.left,b.left),y=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);return x>2&&y>2}
+  var bildirildi=new Set();
+  kutular.forEach(function(a,i){
+    for(var j=i+1;j<kutular.length;j++){var b=kutular[j];
+      if(a.el===b.el||a.el.contains(b.el)||b.el.contains(a.el)||a.sk!==b.sk)continue;
+      if(kes(a.q,b.q)&&!bildirildi.has(a.el)){bildirildi.add(a.el);kalanlar.push({tur:'ustuste',metin:a.metin.slice(0,40),sinif:(typeof a.el.className==='string'&&a.el.className)||a.el.tagName,ayrinti:'"'+b.metin.slice(0,20)+'" ile'})}}
+    dugmeler.forEach(function(d){
+      if(d.el.contains(a.el)||a.el.contains(d.el)||d.sk!==a.sk)return;
+      if(kes(a.q,d.q)&&!bildirildi.has(a.el)){bildirildi.add(a.el);kalanlar.push({tur:'ustuste',metin:a.metin.slice(0,40),sinif:(typeof a.el.className==='string'&&a.el.className)||a.el.tagName,ayrinti:'dugme "'+d.el.textContent.trim().slice(0,20)+'" ile'})}
+    });
+  });
   // Yer tutucular
   var cv=document.createElement('canvas').getContext('2d');
   document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(function(f){
