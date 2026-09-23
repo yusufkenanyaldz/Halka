@@ -1036,10 +1036,13 @@
       };
     });
     fbDB.ref('shared/'+S.roomId+'/'+fbUser.uid+'/habits').set(payload);
+    // Özet yalnız paylaşılanları sayar: partner kartındaki "x/y bugün" altındaki listeyle
+    // tutsun, paylaşılmayan alışkanlıkların sayısı ve durumu odaya gitmesin
+    var ozetHs=act.filter(function(h){return sharedIds.indexOf(h.id)>=0&&bugunGerekli(h)});
     fbDB.ref('shared/'+S.roomId+'/'+fbUser.uid+'/summary').set({
       name:S.user.name,avatar:S.user.avatar||'book',
-      done:act.filter(function(h){return bugunGerekli(h)&&dayState(h,td())==='done'}).length,
-      total:act.filter(bugunGerekli).length,lastSeen:td()
+      done:ozetHs.filter(function(h){return dayState(h,td())==='done'}).length,
+      total:ozetHs.length,lastSeen:td()
     });
   }
 
