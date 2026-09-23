@@ -569,7 +569,7 @@
     .cov>.conf,.ms-ov>.conf{position:fixed;z-index:0}
 
     /* Undo */
-    .undo{position:fixed;bottom:calc(var(--nh)+16px);left:16px;right:16px;background:var(--bg3);border:1px solid var(--bd2);border-radius:20px;padding:14px 18px;display:none;align-items:center;gap:14px;z-index:120;animation:undoIn .35s cubic-bezier(.16,1,.3,1);box-shadow:0 12px 40px rgba(0,0,0,.6)}
+    .undo{position:fixed;bottom:calc(var(--nh) + 16px);left:16px;right:16px;background:var(--bg3);border:1px solid var(--bd2);border-radius:20px;padding:14px 18px;display:none;align-items:center;gap:14px;z-index:120;animation:undoIn .35s cubic-bezier(.16,1,.3,1);box-shadow:0 12px 40px rgba(0,0,0,.6)}
     .undo.show{display:flex}
     .undo-in{flex:1}
     .undo-msg{font-size:14px;font-weight:500;margin-bottom:6px}
@@ -577,6 +577,12 @@
     .undo-fill{height:100%;background:var(--lav);border-radius:2px;transition:width linear}
     .undo-btn{background:var(--lav);color:#1a1a2e;border:none;border-radius:12px;padding:10px 20px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0}
     .undo-btn:active{transform:scale(.92)}
+    .yan-ipucu{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px;width:100%;min-height:44px;margin:4px 0 12px;padding:12px 16px;border-radius:16px;border:1px dashed var(--bd2);background:var(--sf);color:var(--tx2);font-family:inherit;font-size:13px;font-weight:600;text-align:left;cursor:pointer}
+    .yan-ipucu .yan-git{color:var(--lav);font-weight:800;white-space:nowrap}
+    .undo-dun{display:none;background:var(--sf2);color:var(--tx)}
+    .undo.dun .undo-dun{display:block}
+    .undo.dun{flex-wrap:wrap}
+    .undo.dun .undo-in{flex-basis:100%}
     /* Gizliyken: kendi yuksekligi + durum cubugu payi + ust bosluk ve golge payi
        kadar yukari (eskiden sabit -90px'ti; iki satirlik mesajda ya da --sb buyukken
        govdesi ve golgesi ekranin tepesinde kaliyordu). Kayma bitince visibility:hidden,
@@ -904,6 +910,7 @@
 <!-- UNDO -->
 <div class="undo" id="uToast">
   <div class="undo-in"><div class="undo-msg" id="uMsg"></div><div class="undo-bar"><div class="undo-fill" id="uFill"></div></div></div>
+  <button class="undo-btn undo-dun" id="uDun" onclick="dunYaz()">Düne yaz</button>
   <button class="undo-btn" onclick="doUndo()">Geri Al</button>
 </div>
 <div class="toast" id="sToast"></div>
@@ -2088,6 +2095,10 @@
         if(st==='done'){s++;d.setDate(d.getDate()-1);continue}
         if(st==='paused'){d.setDate(d.getDate()-1);continue}
         if(!isScheduledDay(h,x)){d.setDate(d.getDate()-1);continue}
+        // Son 3 gunun isaretsiz gunu henuz "Doldur" ile isaretlenebilir; seriyi bozmaz.
+        // 3 gun gecince autoMiss onu "yapilmadi" ya da joker yapar. Eskiden bir gun
+        // acmamak seriyi hemen "Basla!"ya dusuruyor, puani azaltiyordu.
+        if(!st&&dbw(x,td())<=3){d.setDate(d.getDate()-1);continue}
         break;
       }
       return s;
@@ -2100,7 +2111,7 @@
         var x=ds(d);if(x>bugun)break;
         var st=dayState(h,x);
         if(st==='done'){s++;if(s>en)en=s}
-        else if(st!=='paused'&&isScheduledDay(h,x)&&x!==bugun)s=0;
+        else if(st!=='paused'&&isScheduledDay(h,x)&&!(!st&&dbw(x,bugun)<=3))s=0;   // bkz. cS
         d.setDate(d.getDate()+1);
       }
       return Math.max(en,cS(h));
@@ -3178,6 +3189,12 @@
         // Geçmiş gün düzeltme — 3 güne kadar, only scheduled days
         html+=ydHtml(h);
       });
+      // Liste halka sekmesine gore suzulur (Kazanmak/Birakmak). Obur taraftaki bugun bekleyenler
+      // hic gorunmuyordu: baslik "0/3" derken listede 2 kart, "Sosyal Medya" ancak sekmeye basinca.
+      if(hasGain&&hasQuit){
+        var obur=allAct.filter(function(h){return h.type===(medalFlipped?'gain':'quit')&&bugunGerekli(h)&&!dayState(h,todayS)});
+        if(obur.length)html+='<button class="yan-ipucu" onclick="flipMedal('+(!medalFlipped)+')"><span>'+(medalFlipped?'Kazanmak':'Bırakmak')+' tarafında bugün '+obur.length+' alışkanlık bekliyor</span><span class="yan-git">Göster ›</span></button>';
+      }
       b.innerHTML=html;
       if(!_cardsRendered)_cardsRendered=true;
       setTimeout(initDrag,10);
@@ -3187,7 +3204,7 @@
 
     function spawnBurst(e){var x,y;if(e&&e.clientX){x=e.clientX;y=e.clientY}else if(e&&e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY}else if(e&&e.target){var r=e.target.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2}else{x=window.innerWidth/2;y=window.innerHeight/2}var cols=['var(--mint)','var(--lav)','var(--honey)','var(--sky)','var(--peach)','var(--rose)'];for(var i=0;i<12;i++){var p=document.createElement('div');p.className='burst';var angle=Math.random()*Math.PI*2;var dist=30+Math.random()*50;p.style.cssText='left:'+(x-4)+'px;top:'+(y-4)+'px;background:'+cols[i%cols.length]+';--bx:'+(Math.cos(angle)*dist)+'px;--by:'+(Math.sin(angle)*dist-20)+'px;animation-delay:'+(Math.random()*.1)+'s;width:'+(5+Math.random()*6)+'px;height:'+(5+Math.random()*6)+'px';document.body.appendChild(p);setTimeout(function(){p.remove()},900)}}
 
-    var MOTIVS={morning:['Bugün harika bir gün olacak.','Yeni bir gün, yeni bir fırsat.','Erken kalkan yol alır.','Kendine inan, başladın bile.','Bugün dünden daha iyisin.','Küçük adımlar, büyük değişimler.'],afternoon:['İlerlemeyi koru, yarı yoldasın.','Her adım seni hedefe yaklaştırıyor.','Durma, momentum seninle.','Az kaldı, bugünü tamamla.','Öğleden sonra enerjin hâlâ yüksek.','Bir adım daha, bir halka daha.'],evening:['Bugün ne başardın? Muhteşemsin.','Bir gün daha geride kaldı. Aferin.','Yarına güçlü başla.','Kendine ödül ver, hak ettin.','Gece dinlen, yarın yeni halkalar.'],allDone:['Mükemmel! Bugünü fethettin.','Tüm halkalar ilerliyor. Durdurulamaz bir makinasın.','Kusursuz gün. Devam et.','Bugün üstesinden geldin!','Halkalar altın gibi parlıyor!','Tam puan! Kendine güven.'],noneDone:['Henüz başlamadın — sorun değil, şimdi tam zamanı.','Bir adımla başla, gerisini görürsün.','Küçük başla, büyük bitir.','Bugün senin günün, harekete geç!']};
+    var MOTIVS={morning:['Bugün harika bir gün olacak.','Yeni bir gün, yeni bir fırsat.','Erken kalkan yol alır.','Kendine inan, başladın bile.','Bugün dünden daha iyisin.','Küçük adımlar, büyük değişimler.'],afternoon:['İlerlemeyi koru, yarı yoldasın.','Her adım seni hedefe yaklaştırıyor.','Durma, momentum seninle.','Az kaldı, bugünü tamamla.','Öğleden sonra enerjin hâlâ yüksek.','Bir adım daha, bir halka daha.'],evening:['Bugün ne başardın? Muhteşemsin.','Bir gün daha geride kaldı. Aferin.','Yarına güçlü başla.','Kendine ödül ver, hak ettin.','Gece dinlen, yarın yeni halkalar.'],allDone:['Mükemmel! Bugünü fethettin.','Tüm halkalar ilerliyor. Durdurulamaz bir makinasın.','Kusursuz gün. Devam et.','Bugün üstesinden geldin!','Halkalar altın gibi parlıyor!','Tam puan! Kendine güven.'],noneDone:['Bugün henüz başlamadın — sorun değil, şimdi tam zamanı.','Bir adımla başla, gerisini görürsün.','Küçük başla, büyük bitir.','Bugün senin günün, harekete geç!']};
     function getMotiv(doneCount,totalCount){var h=new Date().getHours();var pool;if(totalCount>0&&doneCount===totalCount)pool=MOTIVS.allDone;else if(doneCount===0)pool=MOTIVS.noneDone;else if(h<12)pool=MOTIVS.morning;else if(h<17)pool=MOTIVS.afternoon;else pool=MOTIVS.evening;var dayIdx=new Date().getDate();return pool[dayIdx%pool.length]}
 
     var _counterAnims={};
@@ -3210,6 +3227,7 @@
       var prev=h.days[td()];
       h.days[td()]='done';sv();
       showU(h.type==='gain'?'Tamamlandı olarak kaydedildi':'Temiz kaldım olarak kaydedildi',function(){if(prev)h.days[td()]=prev;else delete h.days[td()];sv();renderMain()});
+      geceSor(h,prev);
       // Room all-done confetti
       if(_isShared(h)){var sh=_sharedHabits().filter(bugunGerekli);if(sh.length>0&&sh.every(function(x){return dayState(x,td())==='done'})){setTimeout(spConf,300)}}
       setTimeout(function(){var fl=document.getElementById('flash-'+id);if(fl){fl.style.background=h.color;fl.classList.add('go')}renderMain()},80);
@@ -3264,7 +3282,26 @@
       showU(label,function(){if(prev)h.days[dStr]=prev;else delete h.days[dStr];sv();renderMain()});
       setTimeout(renderMain,50); // renderMain icindeki checkGoals hedefe ulasildiysa kutlamayi acar
     }
-    function showU(msg,fn){if(uTm)clearTimeout(uTm);uD=fn;var el=document.getElementById('uToast');document.getElementById('uMsg').textContent=msg;var f=document.getElementById('uFill');f.style.transition='none';f.style.width='100%';el.classList.add('show');requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.transition='width 5s linear';f.style.width='0%'})});uTm=setTimeout(function(){el.classList.remove('show');uD=null},5000)}
+    // Gece yarisindan sonra (05:00'e kadar) isaretlenen gun cogu zaman dun icindir: pazartesi
+    // okunan kitap 00:40'ta isaretlenince saliya yaziliyor, pazartesi bos kaliyordu. Dun isaretsiz
+    // ve programdaysa balon hangi gune yazildigini soyler ve "Dune yaz" sunar.
+    var _dun=null;
+    function geceSor(h,prev){
+      var y=yd();
+      if(new Date().getHours()>=5||prev||dayState(h,y)||!isScheduledDay(h,y)||y<h.createdAt)return;
+      _dun={id:h.id};
+      document.getElementById('uMsg').textContent=GUN_UZUN[new Date().getDay()]+' için kaydedildi';
+      document.getElementById('uToast').classList.add('dun');
+    }
+    function dunYaz(){
+      var h=_dun&&fH(_dun.id);_dun=null;
+      document.getElementById('uToast').classList.remove('show','dun');if(uTm)clearTimeout(uTm);uD=null;
+      if(!h)return;
+      var y=yd();delete h.days[td()];h.days[y]='done';sv();
+      var g=new Date();g.setDate(g.getDate()-1);toast(GUN_UZUN[g.getDay()]+' için kaydedildi');
+      renderMain();
+    }
+    function showU(msg,fn){if(uTm)clearTimeout(uTm);uD=fn;_dun=null;var el=document.getElementById('uToast');el.classList.remove('dun');document.getElementById('uMsg').textContent=msg;var f=document.getElementById('uFill');f.style.transition='none';f.style.width='100%';el.classList.add('show');requestAnimationFrame(function(){requestAnimationFrame(function(){f.style.transition='width 5s linear';f.style.width='0%'})});uTm=setTimeout(function(){el.classList.remove('show');uD=null},5000)}
     function doUndo(){if(uD){uD();uD=null}if(uTm)clearTimeout(uTm);document.getElementById('uToast').classList.remove('show');toast('Geri alındı')}
 
     // Hedefe ulasildi mi? Hedefe hangi yoldan ulasildigi fark etmemeli:
@@ -4016,7 +4053,13 @@
     function getWeekStart(dateStr){var d=new Date(dateStr+'T00:00:00');var dow=d.getDay();dow=dow===0?6:dow-1;d.setDate(d.getDate()-dow);return ds(d)}
     function getFreezeCount(h){if(!h.freezeUsed)return 0;var ws=getWeekStart(td());var cnt=0;Object.keys(h.freezeUsed).forEach(function(k){if(getWeekStart(k)===ws)cnt++});return cnt}
 
-    function checkWeeklySummary(){if(!S.ob||!S.habits.length)return;var now=new Date();if(now.getDay()!==0)return;var key='wksum_'+getWeekStart(td());if(!S.wkSumSeen)S.wkSumSeen={};if(S.wkSumSeen[key])return;renderWeeklySummary()}
+    // Pazar: bu haftanin ozeti. Diger gunler: gecen haftanin ozeti, gorulmediyse bir kez
+    // (eskiden yalniz pazar aciliinca gosteriliyordu; pazar acmayan hic gormuyordu).
+    function checkWeeklySummary(){if(!S.ob||!S.habits.length)return;if(!S.wkSumSeen)S.wkSumSeen={};
+      var ws=getWeekStart(td());
+      if(new Date().getDay()!==0){var g=new Date(ws+'T00:00:00');g.setDate(g.getDate()-7);ws=ds(g)}
+      if(S.wkSumSeen['wksum_'+ws])return;renderWeeklySummary(ws)}
+    var _wkSumWs=null;
     // Haftalık özetin paydası: yapılan her gün; yapılmayan gün yalnız programdaysa, duraklatılmamışsa
     // (biten ya da süren duraklatma) ve geçmişse (bugün henüz işaretsizse sayılmaz, cS gibi).
     function haftaGunSayilir(h,x){
@@ -4025,8 +4068,8 @@
       if(!isScheduledDay(h,x))return false;
       return x<td()||!!st;
     }
-    function renderWeeklySummary(){var hs=_selfHabits();var ws=getWeekStart(td());var totalDone=0,totalPossible=0;hs.forEach(function(h){for(var i=0;i<7;i++){var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+i);var dStr=ds(d);if(dStr<=td()&&dStr>=hStart(h)&&haftaGunSayilir(h,dStr)){totalPossible++;if(dayState(h,dStr)==='done')totalDone++}}});if(totalPossible<2)return;var pct=Math.round(totalDone/totalPossible*100);var bestH='',bestS=0;hs.forEach(function(h){var s=cS(h);if(s>bestS){bestS=s;bestH=h.name}});var el=document.getElementById('wkSumArea');el.innerHTML='<div class="wk-sum"><div class="wk-sum-title">Bu Haftanın Özeti</div><div class="wk-sum-row"><span class="wk-sum-label">Tamamlanan</span><span class="wk-sum-val">'+totalDone+'/'+totalPossible+'</span></div><div class="wk-sum-row"><span class="wk-sum-label">Başarı Oranı</span><span class="wk-sum-val">%'+pct+'</span></div>'+(bestH?'<div class="wk-sum-row"><span class="wk-sum-label">En İyi Seri</span><span class="wk-sum-val">'+esc(bestH)+' ('+bestS+' gün)</span></div>':'')+'<button class="wk-sum-close" onclick="closeWkSum()">Tamam</button></div>'}
-    function closeWkSum(){var key='wksum_'+getWeekStart(td());if(!S.wkSumSeen)S.wkSumSeen={};S.wkSumSeen[key]=true;sv();document.getElementById('wkSumArea').innerHTML=''}
+    function renderWeeklySummary(ws){var hs=_selfHabits();ws=ws||getWeekStart(td());var gecen=ws<getWeekStart(td());_wkSumWs=ws;var totalDone=0,totalPossible=0;hs.forEach(function(h){for(var i=0;i<7;i++){var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+i);var dStr=ds(d);if(dStr<=td()&&dStr>=hStart(h)&&haftaGunSayilir(h,dStr)){totalPossible++;if(dayState(h,dStr)==='done')totalDone++}}});if(totalPossible<2)return;var pct=Math.round(totalDone/totalPossible*100);var bestH='',bestS=0;hs.forEach(function(h){var s=cS(h);if(s>bestS){bestS=s;bestH=h.name}});var el=document.getElementById('wkSumArea');el.innerHTML='<div class="wk-sum"><div class="wk-sum-title">'+(gecen?'Geçen Haftanın Özeti':'Bu Haftanın Özeti')+'</div><div class="wk-sum-row"><span class="wk-sum-label">Tamamlanan</span><span class="wk-sum-val">'+totalDone+'/'+totalPossible+'</span></div><div class="wk-sum-row"><span class="wk-sum-label">Başarı Oranı</span><span class="wk-sum-val">%'+pct+'</span></div>'+(bestH?'<div class="wk-sum-row"><span class="wk-sum-label">En İyi Seri</span><span class="wk-sum-val">'+esc(bestH)+' ('+bestS+' gün)</span></div>':'')+'<button class="wk-sum-close" onclick="closeWkSum()">Tamam</button></div>'}
+    function closeWkSum(){var key='wksum_'+(_wkSumWs||getWeekStart(td()));if(!S.wkSumSeen)S.wkSumSeen={};S.wkSumSeen[key]=true;sv();document.getElementById('wkSumArea').innerHTML=''}
 
     function getWeekData(offset){var hs=_selfHabits();var now=new Date();var ndow=now.getDay();ndow=ndow===0?6:ndow-1;var weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-ndow-offset*7);var data=[];for(var i=0;i<7;i++){var d=new Date(weekStart);d.setDate(d.getDate()+i);var dStr=ds(d);var cnt=0;hs.forEach(function(h){if(dayState(h,dStr)==='done')cnt++});data.push(cnt)}return data}
 

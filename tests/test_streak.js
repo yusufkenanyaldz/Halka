@@ -67,11 +67,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
     for(var i=0;i<broke;i++){var s=dstr(i);if(isScheduledDay(h,s)&&h.days[s]==='done')expected++}
     out.push({t:'Hafta içi, planlı gün kaçırılmış (seri kırılmalı)', beklenen:expected, cikan:cS(h)});
 
-    // 8. HAFTA İÇİ: planlı gün hiç işaretlenmemiş (silinmiş) -> seri kırılmalı
+    // 8. HAFTA İÇİ: planlı gün hiç işaretlenmemiş (silinmiş) -> seri kırılmalı.
+    // Son 3 gün hâlâ "Doldur" ile işaretlenebildiği için seriyi bozmaz (bkz. test_kullanici.js);
+    // kırılma için doldurma süresi geçmiş (4+ gün önceki) bir gün silinir.
     reset('weekdays',31);
     markScheduled(30,0);
     var broke2=null;
-    for(var i=1;i<=10;i++){var s=dstr(i);if(isScheduledDay(h,s)){delete h.days[s];broke2=i;break}}
+    for(var i=4;i<=14;i++){var s=dstr(i);if(isScheduledDay(h,s)){delete h.days[s];broke2=i;break}}
     var expected2=0;
     for(var i=0;i<broke2;i++){var s=dstr(i);if(isScheduledDay(h,s)&&h.days[s]==='done')expected2++}
     out.push({t:'Hafta içi, planlı gün işaretsiz (seri kırılmalı)', beklenen:expected2, cikan:cS(h)});
