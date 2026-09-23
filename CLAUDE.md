@@ -60,11 +60,19 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 - `bugunGerekli(h)` — bugün yapılması gerekiyor mu (duraklatılmamış, bugün programında).
   Günlük "x/y", "Bugünü tamamladın", widget ve partner özeti bununla sayar
 - `checkGoals()` — hedefe ulaşıldı mı; `renderMain()` sonunda çağrılır
+- `widgetListesi()` — widget'ta gösterilenler: etkin, duraklatılmamış, `S.widgetGizli`'de olmayan.
+  Kullanıcı kapattıklarını tutarız, gösterilecekleri değil (yeni eklenen kendiliğinden gelir)
+- `farkliRenk(kullanilanlar)` — yeni alışkanlığa tonca en uzak `CL` rengi (`CL` bir renk çemberi,
+  sıradaki renk bir öncekine çok yakın)
+
+Ömür boyu görünümlere rozetler ve ayrıntıdaki "Son 12 Hafta" haritası da dahildir. Tur takvimi
+tur bazlıdır ama hedef gün sayısında kesilmez: tur, atlanan günlerle daha uzun sürebilir.
+Kullanıcı verisini silen bir "temizlik" yazma: gün kayıtları küçüktür ve hepsi bir yerde sayılır.
 
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (35 takım, 985 senaryo)
+bash tests/calistir.sh            # uygulama testleri (36 takım, 1014 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 bash tests/calistir.sh android    # android/: XML, kaynak bağlantıları, Java derlemesi, hatırlatıcı
 ```
