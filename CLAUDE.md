@@ -64,7 +64,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (34 takım, 964 senaryo)
+bash tests/calistir.sh            # uygulama testleri (35 takım, 985 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 bash tests/calistir.sh android    # android/: XML, kaynak bağlantıları, Java derlemesi, hatırlatıcı
 ```

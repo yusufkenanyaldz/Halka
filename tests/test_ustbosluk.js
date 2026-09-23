@@ -49,7 +49,9 @@ const run = async (url) => {
     await p.evaluate(()=>{document.querySelectorAll('[id$=Modal]').forEach(function(m){m.remove()})});
   }
   // Odali ana ekran: sekme cubugu ustte
-  await p.evaluate(()=>{S.roomId='r';S.roomCode='ABC234';S.roomType='couple';S.sharedHabits=[S.habits[0].id];sv();navTo('main');renderModeTabBar()});
+  await p.evaluate(()=>{S.roomId='r';S.roomCode='ABC234';S.roomType='couple';S.sharedHabits=[S.habits[0].id];sv();navTo('main');renderModeTabBar();
+    if(_activeMode!=='self')setMode('self')});   // onceki ekran (ana-oda) oda sekmesinde birakmis olabilir
+  await p.waitForTimeout(900);
   await olc('ana (odali, sekmeli)');
   // REG: sekmeliyken bosluk sekme cubugunda; baslik cubugun hemen altinda (cift bosluk yok)
   add('REG ana (odali): baslik sekme cubugunun hemen altinda (<=20px)', true, await p.evaluate(()=>{

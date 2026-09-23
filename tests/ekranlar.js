@@ -38,6 +38,8 @@ const EKRANLAR = [
   ['oda-katil',  ()=>{navTo('settings');showJoinRoom()},               [0]],
   ['oda-paylas', ()=>{S.roomId='r';S.roomCode='ABC234';S.roomType='family';navTo('settings');showShareHabits()}, [0]],
   ['oda-ayar',   ()=>{navTo('settings')},                              [900]],
+  // Ana ekranin oda sekmesi (bos oda: davet kodu, Paylasimlari Duzenle, Odadan Ayril)
+  ['ana-oda',    ()=>{S.roomId='r';S.roomCode='ABC234';S.roomType='couple';S.sharedHabits=[];navTo('main');_activeMode='self';setMode('couple')}, [0,700]],
   // Odadaki paylasilan aliskanliklarin istatistik satirlari ("ortak")
   ['istatistik-oda', ()=>{S.sharedHabits=S.habits.filter(function(h){return!h.archived&&!h.paused}).slice(0,2).map(function(h){return h.id});navTo('stats')}, [0,700,1400,2200]],
   ['kutlama',    ()=>{delete S.roomId;delete S.roomCode;delete S.roomType;navTo('main');celeb(S.habits[0])}, [0]],

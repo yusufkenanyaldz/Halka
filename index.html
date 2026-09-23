@@ -1150,7 +1150,8 @@
     }
     if(S.redDavet&&S.roomId)delete S.redDavet[S.roomId];
     delete S.roomId;delete S.roomCode;delete S.roomType;delete S.sharedHabits;
-    S.partnerData=null;sv();toast('Odadan ayrıldın');renderSet();
+    S.partnerData=null;_activeMode='self';sv();toast('Odadan ayrıldın');renderSet();
+    renderModeTabBar();if(document.querySelector('#s-main.active'))renderMain();
   }
 
   // Listen for partner/family data
@@ -1347,13 +1348,25 @@
   function saveShareHabits(){
     fbSyncShared();
     toast('Paylaşımlar güncellendi!');
+    if(_paylasDonus){paylasDon();return}
     renderSet();
     // Ana ekranı güncelle
     if(document.querySelector('#s-main.active'))renderMain();
   }
 
   // Ayarlar sayfasındaki oda bölümüne "Paylaşımları Düzenle" butonu için
-  function editShareHabits(){showShareHabits();}
+  // Liste Ayarlar ekranının içine (#seBox) çizilir: ana ekrandan (oda sekmesi) basılınca önce
+  // Ayarlar'a geç, kapanınca (Tamam / Atla / geri tuşu) oda ekranına dön.
+  var _paylasDonus=false;
+  function editShareHabits(){
+    _paylasDonus=!document.querySelector('#s-settings.active');
+    if(_paylasDonus)navTo('settings');
+    showShareHabits();
+  }
+  function paylasDon(){
+    _paylasDonus=false;_setAlt=null;navTo('main');
+    if(_activeMode!=='self'&&S.roomId)renderRoomMode(_activeMode);
+  }
 
   // Copy room code to clipboard
   function copyRoomCode(){
@@ -1441,7 +1454,10 @@
     if(S.roomId&&S.roomType==='couple')tabs.push({id:'couple',label:'Eş / Sevgili'});
     if(S.roomId&&S.roomType==='family')tabs.push({id:'family',label:'Aile / Dost'});
     var ana=document.getElementById('s-main');
-    if(tabs.length<=1){document.getElementById('modeTabBar').style.display='none';ana.classList.remove('sekmeli');return}
+    if(tabs.length<=1){document.getElementById('modeTabBar').style.display='none';ana.classList.remove('sekmeli');
+      // Oda yoksa (ayrılınca) oda görünümünde kalınmasın: sekme de yok, dönüş yolu olmazdı
+      _activeMode='self';document.getElementById('selfModeContent').style.display='';document.getElementById('roomModeContent').style.display='none';
+      return}
     document.getElementById('modeTabBar').style.display='';ana.classList.add('sekmeli');
     if(_activeMode!=='self'&&!S.roomId)_activeMode='self';
     var h='';
@@ -1622,9 +1638,9 @@
       html+='<div style="width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:var(--lav2);display:flex;align-items:center;justify-content:center"><span class="i" style="width:28px;height:28px;color:var(--lav)">'+IC.target+'</span></div>';
       html+='<div style="font-size:15px;font-weight:700;color:var(--tx);margin-bottom:6px">Henüz ortak alışkanlık yok</div>';
       html+='<div style="margin-bottom:16px;line-height:1.6">Mevcut alışkanlıklarını paylaş veya<br>yeni bir ortak hedef ekle</div>';
-      html+='<div style="display:flex;gap:8px;justify-content:center">';
-      html+='<button class="btn btn-p btn-sm" onclick="editShareHabits()">Paylaşımları Düzenle</button>';
-      html+='<button class="btn btn-s btn-sm" onclick="addHabitForRoom()">Yeni Ekle</button>';
+      html+='<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">';   // dar ekranda alt alta, yazı bölünmez
+      html+='<button class="btn btn-p btn-sm" style="white-space:nowrap" onclick="editShareHabits()">Paylaşımları Düzenle</button>';
+      html+='<button class="btn btn-s btn-sm" style="white-space:nowrap" onclick="addHabitForRoom()">Yeni Ekle</button>';
       html+='</div></div>';
     }
 
@@ -1704,10 +1720,11 @@
     }
 
     // Paylaşım düzenle + oda bilgi
-    html+='<div style="margin:16px 16px 32px;display:flex;gap:8px">';
+    html+='<div style="margin:16px 16px 8px;display:flex;gap:8px">';
     html+='<button class="btn btn-s" style="flex:1;font-size:13px" onclick="editShareHabits()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Paylaşımları Düzenle</button>';
     html+='<button class="btn btn-s" style="flex-shrink:0;padding:12px" onclick="copyRoomCode()" title="Kodu paylaş"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></button>';
     html+='</div>';
+    html+='<div style="margin:0 16px 32px"><button class="ed-apply" style="width:100%;background:var(--coral2);color:var(--coral)" onclick="leaveRoom()">Odadan Ayrıl</button></div>';
     el.innerHTML=html;
     halkaOlcek();
   }
@@ -3828,6 +3845,7 @@
       _setAlt=ad;
     }
     function setAltKapat(){
+      if(_setAlt==='oda'&&typeof _paylasDonus!=='undefined'&&_paylasDonus){paylasDon();return}   // ana ekrandan açıldıysa oraya dön
       _setAlt=null;renderSet();
       var k=setKap();if(k)k.scrollTop=_setKay;
     }
