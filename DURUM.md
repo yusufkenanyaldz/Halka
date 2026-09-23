@@ -42,9 +42,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `8c2a890` | Bırakma türü kalan yüzdeyi gösteriyordu ("Sigara %97 · 1/30", halka azalıyor), kazanma türü ilerlemeyi; ilerleme sanılabiliyordu. Karar: iki tür de ilerleme. Kart, büyük halka (sayı ve yay), oda halkası, ayrıntı, istatistik, widget verisi ve partnere giden veri; etiketlerde "Y kaldı" duruyor. Partner verisine `pctTur:'ilerleme'` eklendi; eski sürümden gelen bırakma yüzdesi (işaretsiz) okurken çevriliyor. |
 
-| (son commit) | Kutlama katmanları. Koyu temada katman %90–92 siyahtı, alttaki ekran piksellerin %2,7–3,4'ünde sızıyordu; konfeti katmanın üstünde (z 201) düşüp başlık ve düğmeyi örtüyordu. Daha ciddisi: konfeti silme zamanlayıcısı kapanış hatasıyla yalnız sonuncuyu siliyordu; her kutlamadan sonra 39 görünmez parça her şeyin üstünde kalıp dokunmaları yutuyordu. Artık katman %97 + bulanıklık, konfeti katmanın içinde yazının altında, dokunma almıyor, 3,5 sn sonra hepsi siliniyor. |
+| `4484df2` | Kutlama katmanları. Koyu temada katman %90–92 siyahtı, alttaki ekran piksellerin %2,7–3,4'ünde sızıyordu; konfeti katmanın üstünde (z 201) düşüp başlık ve düğmeyi örtüyordu. Daha ciddisi: konfeti silme zamanlayıcısı kapanış hatasıyla yalnız sonuncuyu siliyordu; her kutlamadan sonra 39 görünmez parça her şeyin üstünde kalıp dokunmaları yutuyordu. Artık katman %97 + bulanıklık, konfeti katmanın içinde yazının altında, dokunma almıyor, 3,5 sn sonra hepsi siliniyor. |
 
-Testler: uygulama için 643 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Uzun alışkanlık adı düzeni bozuyordu: istatistik satırında 3–4 satır (renk noktası eziliyordu), oda paylaşım listesinde 2–3 satır, halka açıklamasında "Spor" bir satırda yalnız kalıyordu; kart adı ve widget ayarlarında "…" ile kısalıyor ama tam ad hiçbir yerde okunmuyordu. Artık ad her yerde tek satır (`.ad-tek`), kısalınca tam ad `title`'da; açıklama öğesi en çok yarım genişlik. Bütün ekranları gezen test (`test_uzunad.js`). |
+
+Testler: uygulama için 699 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -93,16 +95,14 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
-   ve renk noktasını kaydırıyor; halka altındaki açıklamada kısaltılmıyor, "Spor" tek başına bir satırda kalıyor.
-2. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
-3. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
+1. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
+2. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
     büyük bir boşluk, altında ikinci bir boş durum mesajı.
-4. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+3. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
     ulaşmak için kaydırmak gerekiyor.
-5. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+4. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
-6. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
+5. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
    ("Günaydın, Yusuf", tarih, "+") ve oda başlığı (tarih, "Eş / Sevgili", "+") birlikte
    görünüyor; tarih satırı ve "+" düğmesi iki kez. (23 Eylül, doldurma çubuğu işinde görüldü.)
 

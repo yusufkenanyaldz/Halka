@@ -54,7 +54,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (20 takım, 643 senaryo)
+bash tests/calistir.sh            # uygulama testleri (21 takım, 699 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -150,6 +150,9 @@ hâlini de `EKRANLAR`'a ekle (bkz. `ana-doldur`); yoksa denetim onu hiç görmez
 - Birden çok parçalı kısa bilgi ("4 gün seri", "16/21"): her parça `white-space:nowrap`,
   kapsayıcı `flex-wrap:wrap`. Parça kendi içinde bölünmez, bütün olarak alt satıra iner.
 - Kasıtlı kısaltma `text-overflow:ellipsis` ile yapılır, denetim onu saymaz.
+- Alışkanlık adını gösterirken ad kendi öğesinde olsun, `class="ad-tek"` (tek satır,
+  "…") ve `title="'+esc(h.name)+'"` versin; yanındaki nokta/etiket `flex-shrink:0`.
+  `tests/test_uzunad.js` bütün ekranlarda uzun adı ölçer.
 - Tasarım gereği çok satıra izin verilen etikete `data-satir="N"` ver (rozet adı: 2).
 - Dokunma alanını büyütmek için eksi `margin` verme: komşuyu üstüne çeker (geri
   düğmesi başlığa yapışıyordu). Alanı dolgu ve `min-height:44px` ile büyüt.

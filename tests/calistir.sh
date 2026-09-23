@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Halka test takimlari. Kullanim:
-#   bash tests/calistir.sh          -> uygulama testleri (20 takim)
+#   bash tests/calistir.sh          -> uygulama testleri (21 takim)
 #   bash tests/calistir.sh firebase -> Firebase guvenlik kurali testleri
 #
 # Gereksinim: node + playwright (chromium). Playwright genel kurulumdaysa:
@@ -31,7 +31,8 @@ for t in tests/test_streak.js tests/test_round.js tests/test_xp.js \
          tests/test_remind.js tests/test_turkapanis.js \
          tests/test_kontrast.js tests/test_tasma.js tests/test_toast.js \
          tests/test_baslik.js tests/test_doldur.js \
-         tests/test_minihalka.js tests/test_birakma.js tests/test_kutlama.js; do
+         tests/test_minihalka.js tests/test_birakma.js tests/test_kutlama.js \
+         tests/test_uzunad.js; do
   printf "%-24s " "$(basename "$t")"
   out=$(node "$t" 2>&1)
   echo "$out" | grep -E 'Sonuc|Sayfa hatasi' | tr '\n' ' '
