@@ -50,7 +50,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (12 takım, 245 senaryo)
+bash tests/calistir.sh            # uygulama testleri (13 takım, 269 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -117,6 +117,20 @@ elle yapıştırılır. Kurallar anonim girişin açık olmasını şart koşar.
 Kural mantığı: oda kodu sırdır. Kodu bilen odaya katılabilir; katılan üye
 odayı ve paylaşılan alışkanlıkları okuyabilir. Kod listesi taranamaz, var olan
 bir kodun üstüne yazılamaz.
+
+## Tema ve renk
+
+Açık tema (`body.light`) vurgu değişkenlerini (`--mint`, `--lav`, `--sky`, `--honey`,
+`--coral`, …) metin olarak okunur koyu tonlarla yeniden tanımlar; `--*2` (zemin tonu)
+ve `--*g` (parıltı) pastel kalır. Yeni öğede renk için **değişken kullan**, sabit
+renk yazma; açık tema için tek tek `body.light .x{color:#...}` yaması ekleme.
+Alışkanlığın kendi rengini (`h.color`) metin olarak kullanıyorsan `okunurRenk(h.color)`
+ile geçir. Soldurmak için `opacity` verme (açık zeminde metni eşiğin altına iter);
+gerekiyorsa sınıf ver ve `body.light`'ta kaldır (bkz. `.hc-paused`, `.yd-lbl`).
+
+`tests/test_kontrast.js` her ekranın metin kontrastını WCAG AA'ya göre ölçer
+(`--ayrinti` ile hangi metin, hangi renk). Açık tema 0 kusur ister; koyu temanın
+bilinen kusurları (DURUM.md) yalnız artmasın diye denetlenir.
 
 ## Yazım
 

@@ -24,9 +24,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `886d85b` | Hatırlatıcılar. Arşivli ve duraklatılmış alışkanlıkların alarmı her açılışta yeniden kuruluyordu; artık açılışta iptal ediliyor. Duraklat/devam, arşivden çıkar, ad/tür/program değişikliği alarmı eşitliyor. Program Android'e yeni `scheduleReminderDays` ile ISO gün listesi olarak gidiyor (eski köprüde 4 argümanlı metoda düşülüyor). Açılışta izin istenmiyor. "Üzerine yaz" yedek yüklemede eski alarmlar iptal ediliyor. |
 
-| (son commit) | Tur kapanışı. Yeni tur bugün başlıyordu, bugünün kaydı eski turda kalıyordu: kart "yapılmadı", sayaç 0/1, widget ve partner özeti yanlış; 4 gün sonra `autoMiss` o günü yeni turda "missed" yapıp seriyi geriye dönük kırıyordu (ölçüldü: 11 → 4) ya da joker harcıyordu. Artık bugün işaretliyse yeni tur yarın başlıyor ve bugünü gösteren her yer `dayState` okuyor. |
+| `6e915b9` | Tur kapanışı. Yeni tur bugün başlıyordu, bugünün kaydı eski turda kalıyordu: kart "yapılmadı", sayaç 0/1, widget ve partner özeti yanlış; 4 gün sonra `autoMiss` o günü yeni turda "missed" yapıp seriyi geriye dönük kırıyordu (ölçüldü: 11 → 4) ya da joker harcıyordu. Artık bugün işaretliyse yeni tur yarın başlıyor ve bugünü gösteren her yer `dayState` okuyor. |
 
-Testler: uygulama için 245 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Açık tema okunmuyordu. Vurgu değişkenleri açık temada yeniden tanımlanmıyordu (kontrast 1,3–2,2), 115 ayrı yamanın bir kısmı eski griyi sabitliyordu, soldurmalar (`opacity`) metni eşiğin altına itiyordu. Artık açık temada 15 ekranın hepsinde WCAG AA'nın altında metin yok (önce 239). Ayrıca iki temada da: haftalık grafikte gün etiketi soldurulmuyor, widget önizlemesi okunuyor. |
+
+Testler: uygulama için 269 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -75,11 +77,10 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Açık tema okunmuyor.** Açık tema yalnız zemin ve metin rengini değiştiriyor,
-   vurgu renkleri koyu temanın pastelleri kalıyor. Açık zeminde kontrast: nane 1,37,
-   bal 1,29, gök 1,69, mercan 2,00, lavanta 1,99 (okunabilir metin için en az 4,5).
-   Görünmeyenler: "Filiz" seviye rozeti, "kazanılıyor/bırakılıyor", "2 gündür
-   duraklatılmış", "Duraklat" düğmesi, detaydaki "%67", seçili hedef günü, "Sağlıklı ✓".
+1. **Koyu temada da 218 metin WCAG AA'nın altında** (`tests/test_kontrast.js --ayrinti`).
+   Başlıca kaynak `--tx3` (#5c5a72, zeminde 2,88): menü sekmeleri, bölüm başlıkları,
+   düzenleme etiketleri, takvim günleri. Ayrıca takvimde yapılan günlerde pastel
+   zemin üstünde beyaz rakam (1,5–2,0) ve %18 saydam yapılmayan günler.
 2. **320 pikselde düğme yazısı kesiliyor:** "Tamamland" (ı düşüyor). Aynı genişlikte
    "4 gün seri" alt alta üç satıra bölünüyor, not kutusunun yer tutucusu kesiliyor.
 3. **Gizli bildirim balonu ekranın tepesinde görünüyor.** Balon gizlenirken sabit
