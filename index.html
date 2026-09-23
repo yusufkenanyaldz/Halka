@@ -2030,6 +2030,19 @@
       }
       return s;
     }
+    // Ömür boyu en uzun seri (rekor). cS ile aynı kural: duraklatılmış ve programda olmayan
+    // gün seriyi bozmaz, bugün henüz işaretlenmediyse bozmaz. İstatistik ve seri rozetleri bunu okur.
+    function enUzunSeri(h){
+      var en=0,s=0,bugun=td(),d=new Date(hStart(h)+'T00:00:00');
+      for(var i=0;i<4000;i++){
+        var x=ds(d);if(x>bugun)break;
+        var st=dayState(h,x);
+        if(st==='done'){s++;if(s>en)en=s}
+        else if(st!=='paused'&&isScheduledDay(h,x)&&x!==bugun)s=0;
+        d.setDate(d.getDate()+1);
+      }
+      return Math.max(en,cS(h));
+    }
     var _toastTm=null;
     function toast(m){if(_toastTm)clearTimeout(_toastTm);var t=document.getElementById('sToast');t.textContent=m;t.classList.add('show');_toastTm=setTimeout(function(){t.classList.remove('show');_toastTm=null},2400)}
     function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -3622,7 +3635,7 @@
       // tD: icinde bulunulan tur (Genel ilerleme yuzdesi icin)
       // tDAll: tum turlar (Toplam tamamlanan icin) — tur kapaninca sifirlanmaz
       var html='',tD=0,tDAll=0,tT=0,best=0,tR=0;
-      hs.forEach(function(h){var d=cD(h);tD+=d;tDAll+=cDAll(h);tT+=h.targetDays;var s=cS(h);if(s>best)best=s;tR+=(h.round-1)});
+      hs.forEach(function(h){var d=cD(h);tD+=d;tDAll+=cDAll(h);tT+=h.targetDays;var s=enUzunSeri(h);if(s>best)best=s;tR+=(h.round-1)});
       // Level card
       var xp=calcXP(),lv=getLevel(xp);
       html+='<div class="sc" style="background:linear-gradient(135deg,'+lv.bg+',var(--sf));border-color:'+lv.color.replace(')',',0.2)').replace('var(','rgba(')+'"><div style="display:flex;align-items:center;gap:14px;margin-bottom:10px"><div style="width:48px;height:48px;border-radius:50%;background:'+lv.bg+';border:2px solid '+lv.color+';display:flex;align-items:center;justify-content:center"><span class="i" style="width:24px;height:24px;color:'+lv.color+'">'+IC.star+'</span></div><div style="flex:1"><div style="font-size:18px;font-weight:900;color:'+lv.color+'">'+lv.name+'</div><div style="font-size:12px;color:var(--tx2)">'+xp+' XP</div></div></div>';
@@ -3757,7 +3770,7 @@
       var curTheme=S.theme||'dark';
       html+='<div class="si" onclick="edNm()"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--lav)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="8" r="4"/><path d="M3 18c0-4 3.1-7 7-7s7 3 7 7"/></svg></span><span style="font-size:15px;font-weight:600">İsim: '+esc(S.user.name)+'</span></div><span style="color:var(--tx3)">›</span></div>';
       html+='<div class="si" style="flex-direction:column;align-items:stretch;gap:10px;cursor:default"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--honey)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2"/></svg></span><span style="font-size:15px;font-weight:600">Tema</span></div><div class="theme-toggle"><button class="theme-opt'+(curTheme==='dark'?' on':'')+'" onclick="setTheme(\'dark\')">Koyu</button><button class="theme-opt'+(curTheme==='light'?' on':'')+'" onclick="setTheme(\'light\')">Açık</button></div></div>';
-      html+='<div class="si" onclick="resOB()"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--sky)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10a7 7 0 0112.9-3.8M17 10a7 7 0 01-12.9 3.8"/><path d="M3 4v4h4M17 16v-4h-4"/></svg></span><span style="font-size:15px;font-weight:600">Onboarding Tekrarla</span></div><span style="color:var(--tx3)">›</span></div>';
+      html+='<div class="si" onclick="resOB()"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--sky)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 10a7 7 0 0112.9-3.8M17 10a7 7 0 01-12.9 3.8"/><path d="M3 4v4h4M17 16v-4h-4"/></svg></span><span style="font-size:15px;font-weight:600">Tanıtımı Tekrar Göster</span></div><span style="color:var(--tx3)">›</span></div>';
       html+='<div class="si" onclick="expD()"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--mint)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 3v10M6 9l4 4 4-4"/><path d="M3 15v2h14v-2"/></svg></span><span style="font-size:15px;font-weight:600">Veriyi Dışa Aktar</span></div><span style="color:var(--tx3)">›</span></div>';
       html+='<div class="si" onclick="impD()"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--sky)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13V3M6 7l4-4 4 4"/><path d="M3 15v2h14v-2"/></svg></span><span style="font-size:15px;font-weight:600">Yedekten Geri Yükle</span></div><span style="color:var(--tx3)">›</span></div>';
       try{
@@ -3809,7 +3822,7 @@
     }
     function edNm(){var cur=S.user.name;var el=document.querySelector('#seBox .si:first-child');el.outerHTML='<div class="si" style="flex-direction:column;align-items:stretch;gap:10px;cursor:default"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--lav)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="8" r="4"/><path d="M3 18c0-4 3.1-7 7-7s7 3 7 7"/></svg></span><span style="font-size:15px;font-weight:600">Yeni İsim</span></div><div style="display:flex;gap:8px"><input class="ed-inp" id="setNameInp" value="'+esc(cur)+'" maxlength="20" style="flex:1" onkeydown="if(event.key===\'Enter\')saveSetName()"><button class="ed-apply" onclick="saveSetName()">Kaydet</button></div></div>';setTimeout(function(){var inp=document.getElementById('setNameInp');if(inp)inp.focus()},100)}
     function saveSetName(){var v=document.getElementById('setNameInp').value.trim();if(v&&v!==S.user.name){S.user.name=v;sv();toast('İsim güncellendi')}renderSet()}
-    function resOB(){if(confirm('Onboarding tekrar gösterilsin mi? Mevcut alışkanlıkların korunacak.')){S.ob=false;sv();sP=[];cTab='gain';screenHistory=['main'];document.getElementById('bnav').style.display='none';goScreen('ob1');setTimeout(animD,600);spawnParticles()}}
+    function resOB(){if(confirm('Tanıtım ekranları tekrar gösterilsin mi? Mevcut alışkanlıkların korunacak.')){S.ob=false;sv();sP=[];cTab='gain';screenHistory=['main'];document.getElementById('bnav').style.display='none';goScreen('ob1');setTimeout(animD,600);spawnParticles()}}
     function expD(){var d=new Date();var dateStr=d.getFullYear()+''+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0');var data=JSON.parse(JSON.stringify(S));delete data.partnerData;var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='halka_yedek_'+dateStr+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000);toast('Veri indirildi')}
     function clrAll(){if(confirm('Tüm veriler silinecek! Bu işlem geri alınamaz.')){if(confirm('Gerçekten emin misin?')){S.habits.forEach(function(h){if(h.reminder)cancelNotif(h)});localStorage.removeItem(SK);location.reload()}}}
     function setTheme(t){if(t==='light'){document.body.classList.add('light');document.querySelector('meta[name="theme-color"]').content='#f5f5f8';if(window.HalkaBridge&&HalkaBridge.setLightStatusBar)HalkaBridge.setLightStatusBar(true)}else{document.body.classList.remove('light');document.querySelector('meta[name="theme-color"]').content='#0e0e1a';if(window.HalkaBridge&&HalkaBridge.setLightStatusBar)HalkaBridge.setLightStatusBar(false)}S.theme=t;sv();renderSet()}

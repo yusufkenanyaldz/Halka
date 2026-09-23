@@ -52,6 +52,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 - `cDAll(h)` — tüm turlardaki benzersiz "done" gün sayısı
 - `hStart(h)` — alışkanlığın ilk turunun başlangıç tarihi
 - `pctOf(pay, payda)` — 0-100 arası tamsayı yüzde
+- `enUzunSeri(h)` — ömür boyu en uzun seri (rekor); "En uzun seri" ve seri rozetleri. Şu anki seri `cS(h)`
 - `bugunGerekli(h)` — bugün yapılması gerekiyor mu (duraklatılmamış, bugün programında).
   Günlük "x/y", "Bugünü tamamladın", widget ve partner özeti bununla sayar
 - `checkGoals()` — hedefe ulaşıldı mı; `renderMain()` sonunda çağrılır
@@ -59,7 +60,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (25 takım, 831 senaryo)
+bash tests/calistir.sh            # uygulama testleri (26 takım, 849 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
