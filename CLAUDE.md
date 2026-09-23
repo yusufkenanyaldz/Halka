@@ -60,7 +60,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (30 takım, 895 senaryo)
+bash tests/calistir.sh            # uygulama testleri (31 takım, 910 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -115,6 +115,12 @@ argüman eklemek yerine yeni adla yeni metot aç, JS varlığını denetlesin.
 | `testNotification(ad, mesaj)` | Ayrıntı ekranındaki test düğmesi. |
 | `updateWidget(json)` | Widget verisi. |
 | `getStatusBarHeight()` / `setLightStatusBar(bool)` | Durum çubuğu. |
+
+**Geri tuşu (Android → JS):** `onBackPressed` içinde
+`webView.evaluateJavascript("handleBack()") { v -> if (v == "false") finish() }`.
+`handleBack()` önce açık katmanı kapatır (davet, kilometre taşı, kutlama), sonra ayarların
+alt görünümünü, tanıtım adımlarını, ekran geçmişini; geri alınacak bir şey yoksa `false`
+döner. Yeni bir katman ya da alt adım eklersen buraya da ekle (`tests/test_geritusu.js`).
 
 Hatırlatıcı kuralı (`remActive`): saati var, arşivde değil, duraklatılmamış. Uygulama
 her açılışta bütün alarmları bu kurala göre eşitler (`syncNotif`), yani Android

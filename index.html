@@ -2104,15 +2104,32 @@
       screenHistory=[t];
       goScreen(t);
     }
+    // Android geri tuşu: true = JS geri işlemini yaptı, false = geri alınacak bir şey yok,
+    // uygulama kapansın (Android tarafı false gelince finish() çağırır).
+    // Sıra: en üstteki katman, ayarların alt görünümü, tanıtım adımları, ekran geçmişi.
     function handleBack(){
+      var inv=document.getElementById('inviteModal');if(inv){inv.remove();return true}   // ret değil, ertele
+      if(document.getElementById('msOv').classList.contains('show')){closeMs();return true}
+      if(document.getElementById('cOv').classList.contains('show')){closeC();return true}  // düğmesiyle aynı: yeni tur
+      var cur=(document.querySelector('.screen.active')||{}).id;
       // Ayarlarda acik bir alt gorunum varsa once ayarlar listesine don
-      if(_setAlt&&document.querySelector('#s-settings.active')){setAltKapat();return}
+      if(_setAlt&&cur==='s-settings'){setAltKapat();return true}
+      // Tanıtım: ilk ekrandan çıkılır; 3. ekrandaki alt panelden seçime dönülür
+      if(!S.ob){
+        if(cur==='s-ob3'&&document.getElementById('ob3Choice').style.display==='none'){ob3Back();return true}
+        if(cur==='s-ob3'){goScreen('ob2');return true}
+        if(cur==='s-ob2'){goScreen('ob1');return true}
+        return false;
+      }
       if(screenHistory.length>1){
         screenHistory.pop();
         var prev=screenHistory[screenHistory.length-1];
         if(prev==='main'||prev==='stats'||prev==='settings'){navTo(prev)}
         else{goScreen(prev)}
-      }else{navTo('main')}
+        return true;
+      }
+      if(cur!=='s-main'){navTo('main');return true}
+      return false;
     }
 
     function animD(){var a=document.getElementById('demoArc'),ah=document.getElementById('demoArcH'),p=document.getElementById('demoPct'),c=2*Math.PI*105;var target=(c*.08)+'';a.style.strokeDashoffset=target;if(ah)ah.style.strokeDashoffset=target;var st=performance.now();function tick(n){var pr=Math.min((n-st)/3000,1),e=pr<.5?4*pr*pr*pr:1-Math.pow(-2*pr+2,3)/2;p.textContent='%'+Math.round(e*92);if(pr<1)requestAnimationFrame(tick)}requestAnimationFrame(tick)}

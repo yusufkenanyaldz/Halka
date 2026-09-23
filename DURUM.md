@@ -53,9 +53,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `231c152` | Oda sekmesinde iki başlık alt alta: bireysel başlık (tarih, "Günaydın", bireysel "+", "0/4 alışkanlık tamamlandı", seviye, motivasyon) `#selfModeContent` dışında kaldığı için oda başlığının üstünde de çiziliyordu; tarih ve "+" iki kez. Bireysel başlık bireysel içeriğe alındı; oda sekmesinde yalnız oda başlığı, bireysel başlığın yerinde. Test: `test_odabaslik.js`. |
 | `7d72d03` | Haftalık özetin başarı oranı paydası haftanın her gününü sayıyordu: hafta içi alışkanlığı 5/5 yapılınca "5/7 %71", 4 gün duraklatılmış alışkanlık "3/7 %43", pazar sabahı henüz işaretlenmemiş bugün yüzünden "6/7 %86". Artık `haftaGunSayilir`: yapılan her gün; yapılmayan gün yalnız programdaysa, duraklatılmamışsa (süren duraklatma `pausedAt` ile) ve geçmişse sayılır. Test: `test_haftaozet.js`. |
 | `44a8e45` | Partnere giden özet (`fbSyncShared` → `summary`) bütün alışkanlıkları sayıyordu: 5 alışkanlıktan 2'si paylaşılırken partner kartında "2/5 bugün" (doğrusu 1/2); paylaşılmayan alışkanlıkların sayısı ve bugünkü durumu odaya gidiyordu, hiç paylaşım yokken de. Artık özet yalnız paylaşılan ve bugün gerekli (`bugunGerekli`) alışkanlıkları sayar. Eski sürümdeki partner güncelleyene kadar eski sayıyı gönderir. Test: `test_partnerozet.js`. |
-| (son commit) | Reddedilen davetler her biri ayrı bir localStorage anahtarı (`inv_<oda>_<hid>_rej`) olarak yazılıyor, odadan ayrılınca ve "Tüm verileri sil"den sonra da kalıyor (ölçüm: 5 ret → 5 anahtar, silmeden sonra yine 5), yedeğe girmiyordu. Artık `S.redDavet[oda][hid]`: yedeğe girer, odadan ayrılınca o odanınki silinir, hiçbir üyenin artık paylaşmadığı alışkanlığın reddi temizlenir; eski anahtarlar açılışta taşınır (önce kaydedilir, sonra silinir). Test: `test_davet.js`. |
+| `daee05d` | Reddedilen davetler her biri ayrı bir localStorage anahtarı (`inv_<oda>_<hid>_rej`) olarak yazılıyor, odadan ayrılınca ve "Tüm verileri sil"den sonra da kalıyor (ölçüm: 5 ret → 5 anahtar, silmeden sonra yine 5), yedeğe girmiyordu. Artık `S.redDavet[oda][hid]`: yedeğe girer, odadan ayrılınca o odanınki silinir, hiçbir üyenin artık paylaşmadığı alışkanlığın reddi temizlenir; eski anahtarlar açılışta taşınır (önce kaydedilir, sonra silinir). Test: `test_davet.js`. |
+| (son commit) | Android geri tuşu: `handleBack()` hiçbir durumda değer döndürmüyordu (Android uygulamadan ne zaman çıkacağını bilemiyordu); kutlama, kilometre taşı ve davet penceresi geri tuşuyla kapanmıyordu (arkada ekran değişiyor, katman üstte kalıyordu); tanıtımın ilk ekranında geri tuşu tanıtım bitmeden ana ekrana atıyordu; tanıtım 3'teki alt panelden seçime değil 2. ekrana gidiyordu. Artık `true`/`false` döner (Android sözleşmesi CLAUDE.md'de), katmanları üstten kapatır (kutlamada düğmeyle aynı iş), tanıtımda adım adım geri gider. Test: `test_geritusu.js`. |
 
-Testler: uygulama için 895 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 910 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -92,9 +93,9 @@ Listedeki bütün maddeler giderildi (bkz. yukarıdaki tablo).
   kendiliğinden açmaz.
 - Dışa aktarma `blob:` bağlantısıyla `a.download` kullanıyor; WebView indirmez.
   Köprüye bir "dosya kaydet" metodu gerekir (ör. `HalkaBridge.saveFile(ad, json)`).
-- Geri tuşu: `handleBack()` ayarların alt görünümlerini (widget, oda kur/katıl/paylaş)
-  kapatıyor ama açık katmanları (kutlama, oda penceresi) kapatmıyor ve ana ekrandayken "uygulamadan çık" demiyor; Android'e
-  "tükettim / tüketmedim" dönmeli.
+- Geri tuşu: JS tarafı hazır, `handleBack()` `true`/`false` döner. Android'de
+  `onBackPressed` içinde `evaluateJavascript("handleBack()")`, sonuç `"false"` ise `finish()`
+  (bkz. CLAUDE.md, "Android köprüsü").
 - `fonts/` ve `icons/` klasörleri `index.html` ile birlikte assets'e kopyalanmalı.
   `sw.js` ve `manifest.webmanifest` WebView'da kullanılmaz, zararsız.
 
