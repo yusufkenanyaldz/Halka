@@ -50,7 +50,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (13 takım, 269 senaryo)
+bash tests/calistir.sh            # uygulama testleri (13 takım, 283 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -129,8 +129,8 @@ ile geçir. Soldurmak için `opacity` verme (açık zeminde metni eşiğin altı
 gerekiyorsa sınıf ver ve `body.light`'ta kaldır (bkz. `.hc-paused`, `.yd-lbl`).
 
 `tests/test_kontrast.js` her ekranın metin kontrastını WCAG AA'ya göre ölçer
-(`--ayrinti` ile hangi metin, hangi renk). Açık tema 0 kusur ister; koyu temanın
-bilinen kusurları (DURUM.md) yalnız artmasın diye denetlenir.
+(`--ayrinti` ile hangi metin, hangi renk). İki tema da her ekranda 0 kusur ister.
+Açık gri kutu (`--sf2`/`--sf3`) üzerinde `--tx3` sınırda kalır; orada `--tx2` kullan.
 
 ## Yazım
 

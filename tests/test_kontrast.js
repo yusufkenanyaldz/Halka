@@ -4,9 +4,6 @@
 const path=require('path');
 const { KONTRAST_DENETIM } = require('./kontrast.js');
 const AYRINTI = process.argv.includes('--ayrinti');
-// Koyu tema bilinen kusur sayisi (ayni denetimle, saat sabit): acik tema
-// duzeltmesinden once 232, sonra 218. Koyu tema duzeltilince 0'a indirilmeli.
-const KOYU_BILINEN = 218;
 
 async function veriKur(p, tema){
   await p.evaluate(tema=>{
@@ -120,21 +117,10 @@ async function kalibrasyon(){
     let tk=0;
     for(const [ad,r] of Object.entries(ekranlar)){
       tk+=r.kalanlar.length;
-      // Koyu temanin bilinen kusurlari DURUM.md'de ayri madde; burada yalniz
-      // ekran bazinda bilgi verilir, toplam asagida gerilemeye karsi denetlenir.
-      if(tema==='dark'){
-        if(AYRINTI||r.kalanlar.length)satirlar.push('BILGI KOYU '+ad+': '+r.kalanlar.length+' metin esigin altinda');
-        if(AYRINTI)r.kalanlar.forEach(k=>satirlar.push('      '+k.oran.toFixed(2)+' <'+k.esik+'  '+k.renk+'  .'+String(k.sinif).split(' ')[0]+'  "'+k.metin+'"'));
-        continue;
-      }
       const ok=r.kalanlar.length===0; if(!ok)fail++;
       satirlar.push((ok?'GECTI ':'KALDI ')+(tema==='light'?'ACIK':'KOYU')+' '+ad+': esigin altinda kalan metin  beklenen="0" cikan="'+r.kalanlar.length+'"'
         +(r.kalanlar.length?'  en kotu: '+r.kalanlar.slice(0,3).map(k=>'"'+k.metin+'" '+k.oran).join(', '):''));
       if(AYRINTI)r.kalanlar.forEach(k=>satirlar.push('      '+k.oran.toFixed(2)+' <'+k.esik+'  '+k.renk+'  .'+String(k.sinif).split(' ')[0]+'  "'+k.metin+'"'));
-    }
-    if(tema==='dark'){
-      const ok=tk<=KOYU_BILINEN; if(!ok)fail++;
-      satirlar.push((ok?'GECTI ':'KALDI ')+'KOYU tema gerilemedi: esigin altinda toplam  beklenen="<='+KOYU_BILINEN+'" cikan="'+tk+'"');
     }
     if(errs.length){fail++;satirlar.push('KALDI '+tema+' sayfa hatasi: '+errs.join(' | '))}
   }

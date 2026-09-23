@@ -22,7 +22,7 @@
       --bg:#0e0e1a;--bg2:#121220;--bg3:#181830;
       --sf:rgba(255,255,255,.04);--sf2:rgba(255,255,255,.07);--sf3:rgba(255,255,255,.11);
       --bd:rgba(255,255,255,.05);--bd2:rgba(255,255,255,.09);
-      --tx:#f2f0fa;--tx2:#9896b0;--tx3:#5c5a72;
+      --tx:#f2f0fa;--tx2:#9896b0;--tx3:#8886a2;
       --mint:#8ee4c8;--mint2:rgba(142,228,200,.10);--mintg:rgba(142,228,200,.25);
       --sky:#8ec5f0;--sky2:rgba(142,197,240,.10);--skyg:rgba(142,197,240,.25);
       --lav:#b8a5f0;--lav2:rgba(184,165,240,.10);--lavg:rgba(184,165,240,.3);
@@ -391,7 +391,7 @@
     .ab-g{background:var(--mint2);color:var(--mint);border:1px solid rgba(142,228,200,.12)}
     .ab-q{background:var(--sky2);color:var(--sky);border:1px solid rgba(142,197,240,.12)}
     .ab-m{background:var(--coral2);color:var(--coral);border:1px solid rgba(240,152,152,.08);flex-shrink:0}
-    .ab-done-tap{background:var(--sf2);color:var(--tx3);border:1px solid var(--bd2);padding:10px 14px;display:flex;align-items:center;gap:5px;border-radius:14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0;min-height:44px}
+    .ab-done-tap{background:var(--sf2);color:var(--tx2);border:1px solid var(--bd2);padding:10px 14px;display:flex;align-items:center;gap:5px;border-radius:14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;flex-shrink:0;min-height:44px}
     .ab-done-tap:active{transform:scale(.9);opacity:.6}
     .ab-done-tap .chk{animation:chkPop .5s cubic-bezier(.16,1,.3,1)}
     /* Yesterday */
@@ -447,7 +447,7 @@
     .wb{flex:1;border-radius:6px 6px 0 0;transition:height .6s cubic-bezier(.16,1,.3,1);min-height:4px;position:relative}
     /* Cubuk rengi ayri katmanda: gelecek gunlerin soluklugu alttaki gun etiketine (.wl) gecmesin */
     .wbf{position:absolute;inset:0;border-radius:inherit}
-    .hc-paused{opacity:.55}.yd-lbl{opacity:.7}.si-arc{opacity:.7}.btn-alt{opacity:.7}
+    .hc-paused{opacity:.75}.yd-lbl{opacity:.7}
     .wb .wl{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--tx3);font-weight:600}
     .badge-r{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px}
     .bi{width:56px;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -471,10 +471,15 @@
     .cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
     .cal-h{font-size:11px;color:var(--tx3);text-align:center;padding:4px 0;font-weight:700}
     .cal-d{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--tx2);transition:all .2s;position:relative}
-    .cal-d.dn{color:#fff;font-weight:700}
-    .cal-d.ms{opacity:.18}
+    /* Yapilan gun pastel zeminde: beyaz rakam 1,5-2,0 kaliyordu, koyu rakam okunur.
+       Yapilmayan ve gelecek gun %18 saydamlikta okunmuyordu (1,3). */
+    .cal-d.dn{color:#1a1a2e;font-weight:700}
+    .cal-d.ms{color:var(--coral)}
+    .cal-d.td.dn{color:#1a1a2e}
+    /* Jokerli gun %35 renk tonunda: koyu temada zemin koyu kalir, acik rakam gerekir */
+    .cal-d.dn.fz{color:var(--tx)}
     .cal-d.td{border:2px solid var(--lav);box-shadow:0 0 10px var(--lavg);font-weight:700;color:var(--tx)}
-    .cal-d.ft{color:var(--tx3);opacity:.18}
+    .cal-d.ft{color:var(--tx3)}
     .cal-d.em{visibility:hidden}
     .ed-row{padding:12px 0;border-bottom:1px solid var(--bd)}
     .ed-row:last-child{border-bottom:none}
@@ -600,13 +605,11 @@
     body.light .sch-day.on{background:rgba(107,79,212,.1);border-color:#6b4fd4;color:#6b4fd4}
     body.light .ed-cd.on{border-color:rgba(0,0,0,.5)}
     body.light .yd-bar{background:rgba(240,216,142,.15);border-color:rgba(240,216,142,.22);color:#7a6010}
-    body.light .cal-d.dn{color:#1a1a2e;font-weight:700}
-    /* %18 saydamlikta 'yapilmadi' gunu okunmuyordu (kontrast 1,3) */
-    body.light .cal-d.ms{opacity:1;color:var(--coral)}
-    body.light .cal-d.ft{opacity:1}
+
     /* Soldurma koyu zeminde okunur kaliyor, acik zeminde metni esigin altina itiyordu
        (duraklatilmis kart 2,3; doldurma etiketi 2,9; arsiv satiri 3,1) */
-    body.light .hc-paused,body.light .yd-lbl,body.light .si-arc,body.light .btn-alt{opacity:1}
+    body.light .hc-paused,body.light .yd-lbl{opacity:1}
+    body.light .cal-d.dn.fz{color:#1a1a2e}
     body.light .ring-info-name{color:#111}
     body.light .hc-rg-p{color:#111}
     body.light .hc.done .hc-inner{background:rgba(142,228,200,.08);border-color:rgba(142,228,200,.18)}
@@ -712,8 +715,8 @@
     <div style="padding:20px;border-radius:18px;background:var(--sf);border:2px solid var(--bd2)">
       <div style="font-size:14px;color:var(--tx2);margin-bottom:16px;text-align:center">Oda türünü seç</div>
       <div style="display:flex;gap:8px;margin-bottom:16px">
-        <button class="btn btn-p" style="flex:1;padding:14px" onclick="ob3DoCreate('couple')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span class="btn-alt" style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>
-        <button class="btn btn-s" style="flex:1;padding:14px" onclick="ob3DoCreate('family')"><span style="display:block;font-size:14px">Aile / Dost</span><span class="btn-alt" style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>
+        <button class="btn btn-p" style="flex:1;padding:14px" onclick="ob3DoCreate('couple')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>
+        <button class="btn btn-s" style="flex:1;padding:14px" onclick="ob3DoCreate('family')"><span style="display:block;font-size:14px">Aile / Dost</span><span style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>
       </div>
       <div id="ob3CodeArea" style="display:none;text-align:center;padding:16px 0">
         <div style="font-size:12px;color:var(--tx3);margin-bottom:8px">Oda kodun:</div>
@@ -1197,8 +1200,8 @@
     html+='<div class="sc" style="padding:16px">';
     html+='<div style="font-size:14px;color:var(--tx2);margin-bottom:16px;line-height:1.5">Bir oda oluştur ve kodunu paylaş. Sevgilin, eşin veya arkadaşların bu kodla katılabilir.</div>';
     html+='<div style="display:flex;gap:8px">';
-    html+='<button class="btn btn-p" style="flex:1;padding:14px" onclick="createRoom(\'couple\')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span class="btn-alt" style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>';
-    html+='<button class="btn btn-s" style="flex:1;padding:14px" onclick="createRoom(\'family\')"><span style="display:block;font-size:14px">Aile / Dost</span><span class="btn-alt" style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>';
+    html+='<button class="btn btn-p" style="flex:1;padding:14px" onclick="createRoom(\'couple\')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>';
+    html+='<button class="btn btn-s" style="flex:1;padding:14px" onclick="createRoom(\'family\')"><span style="display:block;font-size:14px">Aile / Dost</span><span style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>';
     html+='</div>';
     html+='<button class="ed-apply" style="width:100%;margin-top:12px;background:var(--sf2);color:var(--tx2)" onclick="renderSet()">İptal</button>';
     html+='</div>';
@@ -1216,7 +1219,7 @@
     html+='<div style="text-align:center;margin-bottom:16px;padding:12px;background:var(--lav2);border-radius:14px;border:1px solid rgba(184,165,240,.15)">';
     html+='<div style="font-size:11px;color:var(--tx2);margin-bottom:4px">Paylaşım Kodu</div>';
     html+='<div style="font-size:24px;font-weight:800;letter-spacing:6px;color:var(--lav)">'+fmtCode(S.roomCode)+'</div>';
-    html+='<div style="font-size:11px;color:var(--tx3);margin-top:4px">Bu kodu arkadaşınla paylaş</div>';
+    html+='<div style="font-size:11px;color:var(--tx2);margin-top:4px">Bu kodu arkadaşınla paylaş</div>';
     html+='<button onclick="copyRoomCode()" style="margin-top:8px;padding:8px 16px;border-radius:10px;border:1px solid rgba(184,165,240,.2);background:transparent;color:var(--lav);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Kodu Paylaş / Kopyala</button></div>';
     if(!act.length){
       html+='<div style="text-align:center;padding:20px;color:var(--tx3);font-size:13px">Henüz alışkanlık eklemedin.<br>Önce alışkanlık ekle, sonra paylaş.</div>';
@@ -3288,7 +3291,7 @@
       var start=new Date(h.createdAt+'T00:00:00'),cs2=new Date(start),dow=cs2.getDay();dow=dow===0?6:dow-1;cs2.setDate(cs2.getDate()-dow);
       var todayS2=td(),endDate=new Date(start);endDate.setDate(endDate.getDate()+h.targetDays);
       var calWeeks=Math.ceil((dbw(ds(cs2),ds(endDate))+1)/7);calWeeks=Math.max(calWeeks,5);calWeeks=Math.min(calWeeks,16);
-      for(var i=0;i<calWeeks*7;i++){var dd=new Date(cs2);dd.setDate(dd.getDate()+i);var dStr=ds(dd),dn2=dd.getDate();if(dStr<h.createdAt||dbw(h.createdAt,dStr)>=h.targetDays)html+='<div class="cal-d em"></div>';else if(dStr>todayS2)html+='<div class="cal-d ft">'+dn2+'</div>';else{var st2=h.days[dStr],cls2='cal-d',bg2='',isFrozen=h.freezeUsed&&h.freezeUsed[dStr];if(dStr===todayS2)cls2+=' td';if(st2==='done'){cls2+=' dn';if(isFrozen){bg2='background:'+rga(h.color,.35)+';border:1px dashed '+h.color}else{bg2='background:'+h.color+';box-shadow:0 0 8px '+rga(h.color,.25)}}else if(st2==='missed'){cls2+=' ms';bg2='background:'+rga(h.color,.1)}var hasNote2=h.notes&&h.notes[dStr];html+='<div class="'+cls2+'" style="'+bg2+'">'+dn2+(hasNote2?'<div style="width:4px;height:4px;border-radius:50%;background:var(--lav);position:absolute;bottom:2px;left:50%;transform:translateX(-50%)"></div>':'')+'</div>'}}
+      for(var i=0;i<calWeeks*7;i++){var dd=new Date(cs2);dd.setDate(dd.getDate()+i);var dStr=ds(dd),dn2=dd.getDate();if(dStr<h.createdAt||dbw(h.createdAt,dStr)>=h.targetDays)html+='<div class="cal-d em"></div>';else if(dStr>todayS2)html+='<div class="cal-d ft">'+dn2+'</div>';else{var st2=h.days[dStr],cls2='cal-d',bg2='',isFrozen=h.freezeUsed&&h.freezeUsed[dStr];if(dStr===todayS2)cls2+=' td';if(st2==='done'){cls2+=' dn';if(isFrozen){cls2+=' fz';bg2='background:'+rga(h.color,.35)+';border:1px dashed '+h.color}else{bg2='background:'+h.color+';box-shadow:0 0 8px '+rga(h.color,.25)}}else if(st2==='missed'){cls2+=' ms';bg2='background:'+rga(h.color,.1)}var hasNote2=h.notes&&h.notes[dStr];html+='<div class="'+cls2+'" style="'+bg2+'">'+dn2+(hasNote2?'<div style="width:4px;height:4px;border-radius:50%;background:var(--lav);position:absolute;bottom:2px;left:50%;transform:translateX(-50%)"></div>':'')+'</div>'}}
       html+='</div></div>';
       // Pause/Archive/Delete — only for non-shared
       if(!isSharedH){
@@ -3666,7 +3669,7 @@
         html+='<div style="margin-top:24px"><div class="sec-t">Arşivlenen Alışkanlıklar</div></div>';
         archived.forEach(function(h){
           var dn=cD(h);
-          html+='<div class="si si-arc"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">';
+          html+='<div class="si"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">';
           html+='<div style="width:12px;height:12px;border-radius:50%;background:'+h.color+';flex-shrink:0"></div>';
           html+='<div style="min-width:0"><div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(h.name)+'</div>';
           html+='<div style="font-size:12px;color:var(--tx3)">'+dn+'/'+h.targetDays+' gün · '+h.round+'. tur</div></div></div>';

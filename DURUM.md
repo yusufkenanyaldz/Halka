@@ -26,9 +26,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `6e915b9` | Tur kapanışı. Yeni tur bugün başlıyordu, bugünün kaydı eski turda kalıyordu: kart "yapılmadı", sayaç 0/1, widget ve partner özeti yanlış; 4 gün sonra `autoMiss` o günü yeni turda "missed" yapıp seriyi geriye dönük kırıyordu (ölçüldü: 11 → 4) ya da joker harcıyordu. Artık bugün işaretliyse yeni tur yarın başlıyor ve bugünü gösteren her yer `dayState` okuyor. |
 
-| (son commit) | Açık tema okunmuyordu. Vurgu değişkenleri açık temada yeniden tanımlanmıyordu (kontrast 1,3–2,2), 115 ayrı yamanın bir kısmı eski griyi sabitliyordu, soldurmalar (`opacity`) metni eşiğin altına itiyordu. Artık açık temada 15 ekranın hepsinde WCAG AA'nın altında metin yok (önce 239). Ayrıca iki temada da: haftalık grafikte gün etiketi soldurulmuyor, widget önizlemesi okunuyor. |
+| `55fb908` | Açık tema okunmuyordu. Vurgu değişkenleri açık temada yeniden tanımlanmıyordu (kontrast 1,3–2,2), 115 ayrı yamanın bir kısmı eski griyi sabitliyordu, soldurmalar (`opacity`) metni eşiğin altına itiyordu. Artık açık temada 15 ekranın hepsinde WCAG AA'nın altında metin yok (önce 239). Ayrıca iki temada da: haftalık grafikte gün etiketi soldurulmuyor, widget önizlemesi okunuyor. |
 
-Testler: uygulama için 269 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Koyu tema kontrastı. 218 metin WCAG AA'nın altındaydı; 175'i üçüncül metin rengi `--tx3` (#5c5a72, 2,88). `--tx3` #8886a2 oldu (5,45; `--tx2`'nin altında, hiyerarşi korunuyor). Takvim iki temada ortak kurala bağlandı: yapılan günde koyu rakam, yapılmayan günde tam görünür mercan, jokerli günde açık rakam. Artık iki temada da 15 ekranın hepsinde 0 kusur. |
+
+Testler: uygulama için 283 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -77,35 +79,31 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Koyu temada da 218 metin WCAG AA'nın altında** (`tests/test_kontrast.js --ayrinti`).
-   Başlıca kaynak `--tx3` (#5c5a72, zeminde 2,88): menü sekmeleri, bölüm başlıkları,
-   düzenleme etiketleri, takvim günleri. Ayrıca takvimde yapılan günlerde pastel
-   zemin üstünde beyaz rakam (1,5–2,0) ve %18 saydam yapılmayan günler.
-2. **320 pikselde düğme yazısı kesiliyor:** "Tamamland" (ı düşüyor). Aynı genişlikte
+1. **320 pikselde düğme yazısı kesiliyor:** "Tamamland" (ı düşüyor). Aynı genişlikte
    "4 gün seri" alt alta üç satıra bölünüyor, not kutusunun yer tutucusu kesiliyor.
-3. **Gizli bildirim balonu ekranın tepesinde görünüyor.** Balon gizlenirken sabit
+2. **Gizli bildirim balonu ekranın tepesinde görünüyor.** Balon gizlenirken sabit
    `-90px` kaydırılıyor, yüksekliği metne göre değişiyor; iki satırlık mesajda alt kenarı
    tarih satırının üstünde kalıyor. Android'de `--sb` köprüden büyük gelirse tek satırda da görünür.
    Görünürken de karşılama başlığının üstüne biniyor.
-4. **Detay başlığında "Geri" başlığa yapışıyor.** Uzun adda başlık 3 satıra çıkıyor,
+3. **Detay başlığında "Geri" başlığa yapışıyor.** Uzun adda başlık 3 satıra çıkıyor,
    "‹ Geri" ile ilk kelime arasında boşluk yok ("Gerimeditasyon").
-5. **Geriye dönük doldurma çubukları listeyi boğuyor.** İşaretlenmemiş her alışkanlık
+4. **Geriye dönük doldurma çubukları listeyi boğuyor.** İşaretlenmemiş her alışkanlık
    için 3 ayrı çubuk ("Dün / 2 gün önce / 3 gün önce — Yaptım / Yapmadım"); 8 alışkanlıkta
    ana liste çubuklarla doluyor. Altı çizili sarı bağlantı görünümü uygulama gibi değil, web sayfası gibi.
-6. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
+5. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
    76'yı gün sayısı sanabilir.
-7. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
+6. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
    arkasından okunuyor, konfeti başlığın üstüne biniyor.
-8. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
+7. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
    ve renk noktasını kaydırıyor; halka altındaki açıklamada kısaltılmıyor, "Spor" tek başına bir satırda kalıyor.
-9. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
-10. **Oda oluştur'da "Aile / Dost 3–6 kişi" düğmesi iki sütuna bölünüyor**, yanındaki
+8. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
+9. **Oda oluştur'da "Aile / Dost 3–6 kişi" düğmesi iki sütuna bölünüyor**, yanındaki
     "Sevgili / Eş 2 kişi" ile hizası tutmuyor.
-11. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
+10. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
     büyük bir boşluk, altında ikinci bir boş durum mesajı.
-12. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+11. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
     ulaşmak için kaydırmak gerekiyor.
-13. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+12. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
 
 ## Yayın hakkında bir not
