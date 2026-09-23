@@ -45,9 +45,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `4484df2` | Kutlama katmanları. Koyu temada katman %90–92 siyahtı, alttaki ekran piksellerin %2,7–3,4'ünde sızıyordu; konfeti katmanın üstünde (z 201) düşüp başlık ve düğmeyi örtüyordu. Daha ciddisi: konfeti silme zamanlayıcısı kapanış hatasıyla yalnız sonuncuyu siliyordu; her kutlamadan sonra 39 görünmez parça her şeyin üstünde kalıp dokunmaları yutuyordu. Artık katman %97 + bulanıklık, konfeti katmanın içinde yazının altında, dokunma almıyor, 3,5 sn sonra hepsi siliniyor. |
 
 | `bd23083` | Uzun alışkanlık adı düzeni bozuyordu: istatistik satırında 3–4 satır (renk noktası eziliyordu), oda paylaşım listesinde 2–3 satır, halka açıklamasında "Spor" bir satırda yalnız kalıyordu; kart adı ve widget ayarlarında "…" ile kısalıyor ama tam ad hiçbir yerde okunmuyordu. Artık ad her yerde tek satır (`.ad-tek`), kısalınca tam ad `title`'da; açıklama öğesi en çok yarım genişlik. Bütün ekranları gezen test (`test_uzunad.js`). |
-| (son commit) | Widget ayarları ekranında geri düğmesi yoktu: ayarlar listesinin içine çiziliyor, çıkmak için alt menüye basmak gerekiyordu; Android geri tuşu (`handleBack`) ayarlardan doğrudan ana ekrana atıyordu (widget, oda kur/katıl/paylaş görünümlerinde de). Ekran listenin en altından açıldığı için kaydırma konumu da kayıyordu. Artık alt görünümler `setAltAc`/`setAltKapat`/`setAltBaslik` ile açılıp kapanıyor: üstte "‹ Geri" başlığı, en üstten açılır, geri dönünce liste eski kaydırma konumunda; Android geri tuşu önce ayarlar listesine döner. Ayrıca seçilen widget boyutu hiç işaretlenmiyordu (seçici 0 öğe buluyordu). Test: `test_altgorunum.js`. |
+| `eef84a9` | Widget ayarları ekranında geri düğmesi yoktu: ayarlar listesinin içine çiziliyor, çıkmak için alt menüye basmak gerekiyordu; Android geri tuşu (`handleBack`) ayarlardan doğrudan ana ekrana atıyordu (widget, oda kur/katıl/paylaş görünümlerinde de). Ekran listenin en altından açıldığı için kaydırma konumu da kayıyordu. Artık alt görünümler `setAltAc`/`setAltKapat`/`setAltBaslik` ile açılıp kapanıyor: üstte "‹ Geri" başlığı, en üstten açılır, geri dönünce liste eski kaydırma konumunda; Android geri tuşu önce ayarlar listesine döner. Ayrıca seçilen widget boyutu hiç işaretlenmiyordu (seçici 0 öğe buluyordu). Test: `test_altgorunum.js`. |
+| (son commit) | Boş ana ekran: bireysel alışkanlık yokken (hiç yok, hepsi arşivde ya da hepsi odada) 270 px'lik boş halka ve ortasında "Kazanılacak alışkanlık yok" çiziliyor, altında ikinci boş mesaj duruyordu; 320×640'ta "Alışkanlık Ekle" düğmesi alt menünün altında kalıyor, ekran 101 px kaydırılıyordu. Artık halka bölümü (`#rHero`) gizlenir, tek boş durum mesajı üstte ve düğme kaydırmadan görünür. Test: `test_bosana.js`. |
 
-Testler: uygulama için 711 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 747 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -96,13 +97,11 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
-    büyük bir boşluk, altında ikinci bir boş durum mesajı.
-2. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+1. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
     ulaşmak için kaydırmak gerekiyor.
-3. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+2. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
-4. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
+3. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
    ("Günaydın, Yusuf", tarih, "+") ve oda başlığı (tarih, "Eş / Sevgili", "+") birlikte
    görünüyor; tarih satırı ve "+" düğmesi iki kez. (23 Eylül, doldurma çubuğu işinde görüldü.)
 

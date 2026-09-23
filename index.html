@@ -800,7 +800,7 @@
     <div id="selfModeContent">
     <div id="allDoneBanner"></div>
     <!-- Medal ring hero -->
-    <div class="ring-hero">
+    <div class="ring-hero" id="rHero">
       <div class="ring-amb" id="rAmb"></div>
       <div class="medal-wrapper" id="medalWrapper">
         <div class="medal-face-single" id="medalFace">
@@ -2247,6 +2247,8 @@
       renderCards();
       renderModeTabBar();
       var emp=document.getElementById('empBox'),sec=document.getElementById('todaySec');
+      // Bireysel alışkanlık yoksa boş halka çizilmez; yerini tek boş durum mesajı alır
+      document.getElementById('rHero').style.display=act.length?'':'none';
       if(!act.length){
         var sharedCount=_sharedHabits().length;
         if(sharedCount>0){
