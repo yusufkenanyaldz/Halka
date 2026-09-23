@@ -152,6 +152,34 @@ const run = async (url) => {
     add('DURAKLAT: baslik Turkce ("seri korunuyor", "streak" yok)', true, /seri korunuyor/.test(r4)&&!/streak/i.test(r4)&&!/0 gündür/.test(r4));
     await p.close();
   }
+  // HAFTA: haftalik hedef (telefonda "haftayi 5 gun sayiyor" sanildi)
+  for(const [ad,saat,bas,yap,bek] of [
+    ['HAFTA cumartesi, 2 gun kaldi: yetismeyecegini soyler','2026-09-26T20:00:00','2026-09-21',['2026-09-21','2026-09-22'],'2/5|Hedef: haftada 5 gün|Bu hafta yetişmez, en çok 4 gün olur'],
+    ['HAFTA cuma baslayan: ilk hafta kalan gunle sinirli','2026-09-25T20:00:00','2026-09-25',['2026-09-25'],'1/3|İlk hafta: 3 gün|2 gün daha · haftada 2 gün kaldı'],
+    ['REG HAFTA carsamba baslayan: hedef 5 kalir','2026-09-23T23:50:00','2026-09-23',['2026-09-23'],'1/5|Hedef: haftada 5 gün|4 gün daha · haftada 4 gün kaldı'],
+    ['REG HAFTA gecen haftadan beri: tam hafta, bugun sayilir','2026-09-23T10:00:00','2026-09-14',['2026-09-21'],'1/5|Hedef: haftada 5 gün|4 gün daha · haftada 5 gün kaldı']]){
+    const p=await ac(new Function(`${temel}var h={id:'a',name:'Kitap',type:'gain',targetDays:90,color:CL[0],createdAt:'${bas}',days:{},round:1,history:[],notes:{},freezeUsed:{}};
+      ${JSON.stringify(yap)}.forEach(function(d){h.days[d]='done'});var x=new Date('${bas}T00:00:00');while(ds(x)<td()){if(!h.days[ds(x)])h.freezeUsed[ds(x)]=1;x.setDate(x.getDate()+1)}S.habits=[h];sv()`),{saat});
+    add(ad, bek, await p.evaluate(()=>{var e=document.getElementById('weeklyGoalArea');return e.querySelector('.wg-count').innerText.replace(/\s+/g,'')+'|'+e.querySelector('.wg-title').innerText+'|'+e.querySelector('.wg-sub').innerText}));
+    await p.close();
+  }
+  // DURUM CUBUGU: kaydirilan baslik saatin arkasindan akiyordu (telefonda goruldu)
+  {
+    const p=await b.newPage({viewport:{width:384,height:700}});
+    p.on('pageerror',e=>errs.push(e.message));
+    await p.route('**/fonts.googleapis.com/**', r=>r.abort());
+    await p.addInitScript(()=>{window.HalkaBridge={getStatusBarHeight:function(){return 40},setLightStatusBar:function(){},updateWidget:function(){}}});
+    await p.clock.setFixedTime(new Date('2026-09-23T23:50:00'));
+    await p.goto(url); await p.waitForTimeout(800);
+    await p.evaluate(()=>{S.ob=true;S.user={name:'Yusuf'};S.theme='light';S.habits=[{id:'a',name:'Kitap',type:'gain',targetDays:90,color:CL[0],createdAt:td(),days:{},round:1,history:[],notes:{}}];sv()});
+    await p.reload(); await p.waitForTimeout(1000);
+    const olc=()=>p.evaluate(()=>{var pr=document.getElementById('sbPerde');if(pr)pr.style.pointerEvents='auto';   // elementFromPoint pointer-events:none'u gormez
+      var e=document.elementFromPoint(100,20),r=e&&e.id==='sbPerde'?'perde':(e?e.id||e.className:'yok');if(pr)pr.style.pointerEvents='';return r});
+    await p.evaluate(()=>{var s=document.querySelector('#s-main .scroll-y')||document.getElementById('s-main');s.scrollTop=120;window.scrollTo(0,120)}); await p.waitForTimeout(300);
+    add('DURUM CUBUGU: kaydirinca baslik durum cubugunun arkasinda kalir (serit ustte)', 'perde', await olc());
+    add('DURUM CUBUGU: serit zeminle ayni renk (acik tema)', true, await p.evaluate(()=>{var pr=document.getElementById('sbPerde');return !!pr&&getComputedStyle(pr).backgroundColor===getComputedStyle(document.body).backgroundColor&&pr.getBoundingClientRect().height===40}));
+    await p.close();
+  }
   await b.close();
   return {out:res, errs:errs.join(' | ')||'(yok)'};
 };

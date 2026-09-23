@@ -36,6 +36,9 @@
       --sb:36px;
     }
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    /* Android: durum cubugu seridi. Sayfa durum cubugunun altina uzanir; kaydirilan icerik
+       (baslik) saatin ve simgelerin arkasindan akiyordu. Yalniz kopru varken (#sbPerde). */
+    .sb-perde{position:fixed;top:0;left:0;right:0;height:var(--sb);background:var(--bg);z-index:90;pointer-events:none}
     body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh;overflow-x:hidden;user-select:none;-webkit-user-select:none}
 
     .screen{display:none;height:100dvh;flex-direction:column}
@@ -2665,26 +2668,42 @@
       var hs=_selfHabits();
       if(!hs.length){el.innerHTML='';return}
       if(!S.weeklyGoal)S.weeklyGoal=5; // varsayılan hedef: haftada 5 gün
-      var ws=getWeekStart(td());
+      var ws=getWeekStart(td()),bugun=td();
+      // Hedef "haftanin 7 gununden kaci" (varsayilan 5, kalemle 1-7). Ekranda bu yazmiyordu,
+      // "1/5" haftanin 5 gun sayildigi sanilabiliyordu. Ayrica:
+      // - Ilk hafta: baslamadan onceki gunler kacirilmis sayilmaz, hedef kalan gunle sinirli
+      //   (Cuma baslayan "1/5, 4 gun daha" goruyordu; haftada 3 gun vardi).
+      // - Yetismeyecekse "x gun daha" demez (Cumartesi "3 gun daha" yaziyordu, 2 gun kalmisti).
+      var ilk=hs.reduce(function(m,h){var x=hStart(h);return x<m?x:m},'9999');
+      var bas=ilk>ws?ilk:ws;
+      var hafSon=new Date(ws+'T00:00:00');hafSon.setDate(hafSon.getDate()+6);hafSon=ds(hafSon);
       var doneDays=0;
       // Bu hafta kaç farklı günde en az 1 alışkanlık tamamlandı
       for(var i=0;i<7;i++){
         var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+i);
         var dStr=ds(d);
-        if(dStr>td())break;
+        if(dStr>bugun)break;
         var anyDone=hs.some(function(h){return dayState(h,dStr)==='done'});
         if(anyDone)doneDays++;
       }
+      var bugunYapildi=hs.some(function(h){return dayState(h,bugun)==='done'});
+      var kalan=dbw(bugun,hafSon)+(bugunYapildi?0:1);   // bu hafta daha isaretlenebilecek gun
       var goal=S.weeklyGoal;
-      var pct=Math.min(100,Math.round(doneDays/goal*100));
+      var ilkHafta=bas>ws&&bas<=hafSon;
+      var hedef=Math.max(1,Math.min(goal,dbw(bas,hafSon)+1));
+      var pct=Math.min(100,Math.round(doneDays/hedef*100));
       var barColor=pct>=100?'var(--mint)':pct>=60?'var(--lav)':'var(--sky)';
-      var statusTxt=doneDays>=goal
+      var eksik=hedef-doneDays;
+      var statusTxt=eksik<=0
         ?'Haftalık hedefe ulaştın!'
-        :(goal-doneDays)+' gün daha — hedefe '+(goal-doneDays===1?'1 adım':'birkaç adım')+'';
+        :eksik>kalan
+          ?'Bu hafta yetişmez, en çok '+(doneDays+kalan)+' gün olur'
+          :eksik+' gün daha · haftada '+kalan+' gün kaldı';
+      var baslik=ilkHafta&&hedef<goal?'İlk hafta: '+hedef+' gün':'Hedef: haftada '+goal+' gün';
       el.innerHTML='<div class="wg-box">'
-        +'<div class="wg-count">'+doneDays+'<span style="font-size:13px;color:var(--tx3);font-weight:500">/'+goal+'</span></div>'
+        +'<div class="wg-count">'+doneDays+'<span style="font-size:13px;color:var(--tx3);font-weight:500">/'+hedef+'</span></div>'
         +'<div class="wg-info">'
-          +'<div class="wg-title">Haftalık hedef</div>'
+          +'<div class="wg-title">'+baslik+'</div>'
           +'<div class="wg-bar-wrap"><div class="wg-bar-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>'
           +'<div class="wg-sub">'+statusTxt+'</div>'
         +'</div>'
@@ -2698,7 +2717,7 @@
       var el=document.getElementById('weeklyGoalArea');
       if(!el)return;
       var h='<div class="wg-box" style="flex-direction:column;gap:10px">';
-      h+='<div class="wg-title">Haftalık hedef kaç gün?</div>';
+      h+='<div class="wg-title">Haftanın 7 gününden kaçında?</div><div class="wg-sub" style="margin-top:-6px">En az bir alışkanlığını yaptığın günler sayılır</div>';
       h+='<div style="display:flex;gap:6px">';
       for(var i=1;i<=7;i++){
         var on=i===cur;
@@ -4055,7 +4074,8 @@
     }
 
     document.addEventListener('DOMContentLoaded',function(){
-      if(window.HalkaBridge&&HalkaBridge.getStatusBarHeight){var sbh=HalkaBridge.getStatusBarHeight();if(sbh>0)document.documentElement.style.setProperty('--sb',sbh+'px')}
+      if(window.HalkaBridge&&HalkaBridge.getStatusBarHeight){var sbh=HalkaBridge.getStatusBarHeight();if(sbh>0){document.documentElement.style.setProperty('--sb',sbh+'px');
+        var pr=document.createElement('div');pr.id='sbPerde';pr.className='sb-perde';document.body.appendChild(pr)}}
       init();
       setTimeout(checkWeeklySummary,500);
       if(S&&S.theme==='light'){document.body.classList.add('light');document.querySelector('meta[name="theme-color"]').content='#f5f5f8';if(window.HalkaBridge&&HalkaBridge.setLightStatusBar)HalkaBridge.setLightStatusBar(true)}

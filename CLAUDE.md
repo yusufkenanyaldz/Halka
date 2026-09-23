@@ -60,6 +60,8 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 - `bugunGerekli(h)` — bugün yapılması gerekiyor mu (duraklatılmamış, bugün programında).
   Günlük "x/y", "Bugünü tamamladın", widget ve partner özeti bununla sayar
 - `checkGoals()` — hedefe ulaşıldı mı; `renderMain()` sonunda çağrılır
+- `renderWeeklyGoal()` — haftalık hedef "haftanın 7 gününden kaçı" (`S.weeklyGoal`, varsayılan 5).
+  İlk hafta başlangıçtan sayılır; yetişmeyecekse "x gün daha" demez
 - `widgetListesi()` — widget'ta gösterilenler: etkin, duraklatılmamış, `S.widgetGizli`'de olmayan.
   Kullanıcı kapattıklarını tutarız, gösterilecekleri değil (yeni eklenen kendiliğinden gelir)
 - `farkliRenk(kullanilanlar)` — yeni alışkanlığa tonca en uzak `CL` rengi (`CL` bir renk çemberi,
@@ -72,7 +74,7 @@ Kullanıcı verisini silen bir "temizlik" yazma: gün kayıtları küçüktür v
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (36 takım, 1014 senaryo)
+bash tests/calistir.sh            # uygulama testleri (36 takım, 1020 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 bash tests/calistir.sh android    # android/: XML, kaynak bağlantıları, Java derlemesi, hatırlatıcı
 ```
@@ -204,6 +206,8 @@ hâlini de `EKRANLAR`'a ekle (bkz. `ana-doldur`); yoksa denetim onu hiç görmez
   Her ekranın en üstteki öğesi `calc(var(--sb) + …)` ile başlasın, satır içi `padding-top`
   ile ezme (ana ekran başlığı odasız kullanıcıda kameranın altına giriyordu). Tarayıcıda
   durum çubuğu olmadığı için görünmez; `tests/test_ustbosluk.js` `--sb` 48 px'te ölçer.
+  Köprü varken durum çubuğunun arkasında zemin renginde sabit bir şerit (`#sbPerde`, z 90) durur;
+  kaydırılan içerik saatin arkasından akmasın diye. Katmanlar (kutlama, balon) onun üstündedir.
 - Ölçümden önce `document.fonts.ready` beklenir; yazı tipi yüklenmeden genişlikler
   yedek yazı tipine göre çıkar ve sonuç oynar.
 
