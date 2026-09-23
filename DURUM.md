@@ -32,9 +32,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `fea0b4f` | Dar ekranda kesilen/bölünen metin. 320 pikselde "Tamamlandı" kırpılıyordu (kutu 74 px, metin 90 px): düğme `min-width:0` ile yazısından dar olabiliyordu. "5 gün seri" üç satıra, "2 gün önce" iki satıra bölünüyordu; oda düğmelerinde ad ve kişi sayısı yan yana sıkışıyordu (360'ta da); not kutusunun yer tutucusu sığmıyordu. Artık 320/360/412'de 15 ekranın hepsinde kırpılan ya da bölünen kısa metin yok. |
 
-| (son commit) | Gizli bildirim balonu ekranın tepesinde görünüyordu. Gizlerken sabit `-90px` kaydırılıyordu; balonun yüksekliği ve durum çubuğu payı (`--sb`, Android'de köprüden) değişken olduğundan gövdesi ve gölgesi ekranda kalıyordu (varsayılan payda gövdenin 2 px'i + 46 px gölge) ve üstteki dokunmaları yakalıyordu. Artık kendi yüksekliği + pay + gölge kadar kayıyor, kayma bitince `visibility:hidden`. Balon genişliği ekranın yarısıyla sınırlıydı (orta mesaj 2-3 satır); artık ekran eksi 32 px. |
+| `e94b14a` | Gizli bildirim balonu ekranın tepesinde görünüyordu. Gizlerken sabit `-90px` kaydırılıyordu; balonun yüksekliği ve durum çubuğu payı (`--sb`, Android'de köprüden) değişken olduğundan gövdesi ve gölgesi ekranda kalıyordu (varsayılan payda gövdenin 2 px'i + 46 px gölge) ve üstteki dokunmaları yakalıyordu. Artık kendi yüksekliği + pay + gölge kadar kayıyor, kayma bitince `visibility:hidden`. Balon genişliği ekranın yarısıyla sınırlıydı (orta mesaj 2-3 satır); artık ekran eksi 32 px. |
 
-Testler: uygulama için 441 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Ayrıntı başlığında "Geri" başlığa yapışıyordu (ölçülen boşluk 0 px; 320'de orta uzunlukta adda bile). Geri düğmesinin eksi sağ boşluğu başlığı üstüne çekiyordu, çubukta boşluk yoktu; uzun ad 3 satıra iniyor, tek kelimelik uzun ad ekrandan taşıyordu. Artık 12 px boşluk, başlık ortalı ve en çok 2 satır ("…", tam ad `title`'da), dar ekranda (≤359 px) yalnız geri oku. Geri düğmesinin dokunma alanı 34 px'ten 44 px'e çıktı. |
+
+Testler: uygulama için 501 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -83,23 +85,21 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Detay başlığında "Geri" başlığa yapışıyor.** Uzun adda başlık 3 satıra çıkıyor,
-   "‹ Geri" ile ilk kelime arasında boşluk yok ("Gerimeditasyon").
-2. **Geriye dönük doldurma çubukları listeyi boğuyor.** İşaretlenmemiş her alışkanlık
+1. **Geriye dönük doldurma çubukları listeyi boğuyor.** İşaretlenmemiş her alışkanlık
    için 3 ayrı çubuk ("Dün / 2 gün önce / 3 gün önce — Yaptım / Yapmadım"); 8 alışkanlıkta
    ana liste çubuklarla doluyor. Altı çizili sarı bağlantı görünümü uygulama gibi değil, web sayfası gibi.
-3. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
+2. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
    76'yı gün sayısı sanabilir.
-4. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
+3. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
    arkasından okunuyor, konfeti başlığın üstüne biniyor.
-5. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
+4. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
    ve renk noktasını kaydırıyor; halka altındaki açıklamada kısaltılmıyor, "Spor" tek başına bir satırda kalıyor.
-6. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
-7. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
+5. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
+6. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
     büyük bir boşluk, altında ikinci bir boş durum mesajı.
-8. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+7. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
     ulaşmak için kaydırmak gerekiyor.
-9. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+8. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
 
 ## Yayın hakkında bir not

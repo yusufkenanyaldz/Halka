@@ -417,9 +417,15 @@
     /* ADD */
     .add-scr{position:relative;z-index:1}
     .add-scroll{padding:calc(var(--sb) + 12px) 24px calc(var(--nh) + 80px) !important}
-    .topb{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-    .topb h2{font-size:20px;font-weight:700}
-    .bk{background:none;border:none;color:var(--tx2);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;padding:8px 12px 8px 4px;margin:-8px -12px -8px -4px;border-radius:12px;transition:all .2s}
+    .topb{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+    /* Baslik kalan alani alir, ortalanir; en cok 2 satir, fazlasi "..." (tam ad title'da).
+       Tek kelimelik uzun ad da bolunur, ekrandan tasmaz. */
+    .topb h2{font-size:20px;font-weight:700;flex:1;min-width:0;text-align:center;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+    /* Iki yan esit genislikte: baslik tam ortada kalir */
+    .topb>.bk,.topb>.topb-bos{flex:0 0 68px}
+    /* Dar ekranda yalniz geri oku (44px dokunma alani); "Geri" yazisi basliga yer birakir */
+    @media (max-width:359px){.topb>.bk,.topb>.topb-bos{flex-basis:44px}.bk-t{display:none}}
+    .bk{background:none;border:none;color:var(--tx2);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;padding:8px 12px 8px 4px;margin:-8px 0 -8px -4px;min-height:44px;border-radius:12px;transition:all .2s}
     .bk:active{background:var(--sf2);opacity:.7}
     .fsec{margin-bottom:24px}
     .fsec label{display:block;font-size:13px;color:var(--tx2);margin-bottom:10px;font-weight:600}
@@ -818,7 +824,7 @@
 <!-- ADD -->
 <div class="screen add-scr" id="s-add">
   <div class="scroll-y add-scroll">
-    <div class="topb"><button class="bk" onclick="handleBack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg> Geri</button><h2 style="text-align:center">Yeni Alışkanlık</h2><div style="width:60px"></div></div>
+    <div class="topb"><button class="bk" aria-label="Geri" onclick="handleBack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg><span class="bk-t">Geri</span></button><h2>Yeni Alışkanlık</h2><div class="topb-bos"></div></div>
     <div class="fsec"><label>Alışkanlık adı</label>
       <div style="display:flex;gap:8px;align-items:center">
         <div id="aIconPrev" onclick="toggleIconPicker()" style="width:42px;height:42px;border-radius:12px;background:var(--sf2);border:1.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;color:var(--tx2)"></div>
@@ -841,7 +847,7 @@
 <!-- DETAIL -->
 <div class="screen det-scr" id="s-detail">
   <div class="scroll-y">
-    <div class="topb"><button class="bk" onclick="handleBack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg> Geri</button><h2 id="dTit"></h2><div style="width:60px"></div></div>
+    <div class="topb"><button class="bk" aria-label="Geri" onclick="handleBack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg><span class="bk-t">Geri</span></button><h2 id="dTit"></h2><div class="topb-bos"></div></div>
     <div id="dBox"></div>
   </div>
 </div>
@@ -3212,7 +3218,7 @@
     function openDet(id){dI=id;screenHistory.push('detail');goScreen('detail')}
     function renderDet(id){
       var h=fH(id);if(!h)return;
-      document.getElementById('dTit').textContent=h.name;
+      var dt=document.getElementById('dTit');dt.textContent=h.name;dt.title=h.name;
       var b=document.getElementById('dBox'),dn=cD(h),streak=cS(h);
       var ringPct,centerHtml,pctLabel;
       if(h.type==='gain'){
@@ -3358,7 +3364,7 @@
       b.innerHTML=html;
     }
 
-    function edSaveName(id){var h=fH(id);if(!h)return;var v=document.getElementById('edName').value.trim();if(v&&v!==h.name){h.name=v;syncNotif(h,true);sv();document.getElementById('dTit').textContent=v;toast('İsim güncellendi')}}
+    function edSaveName(id){var h=fH(id);if(!h)return;var v=document.getElementById('edName').value.trim();if(v&&v!==h.name){h.name=v;syncNotif(h,true);sv();document.getElementById('dTit').textContent=v;document.getElementById('dTit').title=v;toast('İsim güncellendi')}}
     function edType(id){var h=fH(id);if(!h)return;h.type=h.type==='gain'?'quit':'gain';syncNotif(h,true);sv();renderDet(id);toast('Tür değiştirildi')}
     function edDays(id,d){var h=fH(id);if(!h)return;var done=cD(h);if(d<done){if(!confirm('Hedefi '+d+' güne düşürmek istediğine emin misin?'))return}h.targetDays=d;sv();renderDet(id);toast(d+' gün olarak güncellendi')}
     function edCustomDays(id){var h=fH(id);if(!h)return;var inp=document.getElementById('edCustomDay');var v=parseInt(inp.value);if(v&&v>=7&&v<=365){var done=cD(h);if(v<done){if(!confirm('Hedefi '+v+' güne düşürmek istediğine emin misin?'))return}h.targetDays=v;sv();renderDet(id);toast(v+' gün olarak güncellendi')}else{toast('7 ile 365 arası bir sayı gir')}}
