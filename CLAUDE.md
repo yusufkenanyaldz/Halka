@@ -44,7 +44,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (10 takım, 196 senaryo)
+bash tests/calistir.sh            # uygulama testleri (11 takım, 223 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -77,6 +77,27 @@ Bunların hepsi bu depoda gerçekten yaşandı:
    kapatıyor; zayıf şebeke için isteği cevapsız bırakıyor.
 7. **Düzeneği sına.** Kuralları kasten açıp testlerin kırmızıya döndüğünü gör.
    Geçen bir test, bir şey ölçtüğünü kanıtlamaz.
+
+## Android köprüsü (`HalkaBridge`)
+
+Android tarafı `@JavascriptInterface` ile şu metotları sunar; hepsi isteğe bağlı,
+yoksa JS sessizce atlar. **Java metodu argüman sayısıyla eşleşir**: bir metoda
+argüman eklemek yerine yeni adla yeni metot aç, JS varlığını denetlesin.
+
+| Metot | Ne zaman |
+|---|---|
+| `scheduleReminderDays(id, ad, "SS:DD", mesaj, gunlerJson)` | Hatırlatıcı kur. `gunlerJson` ISO gün numaraları: `"[1,2,3,4,5]"` = Pzt–Cum (1=Pzt … 7=Paz, `java.time.DayOfWeek` ile aynı). Aynı `id` ile gelirse eskisinin yerine geçer. |
+| `scheduleReminder(id, ad, "SS:DD", mesaj)` | Eski köprü; `scheduleReminderDays` yoksa kullanılır, günleri bilmez (her gün çalar). |
+| `cancelReminder(id)` | Alarmı kaldır. Olmayan bir `id` için de güvenle çağrılabilmeli. |
+| `requestNotificationPermission()` | Yalnız kullanıcı saat kurduğunda çağrılır. |
+| `testNotification(ad, mesaj)` | Ayrıntı ekranındaki test düğmesi. |
+| `updateWidget(json)` | Widget verisi. |
+| `getStatusBarHeight()` / `setLightStatusBar(bool)` | Durum çubuğu. |
+
+Hatırlatıcı kuralı (`remActive`): saati var, arşivde değil, duraklatılmamış. Uygulama
+her açılışta bütün alarmları bu kurala göre eşitler (`syncNotif`), yani Android
+tarafının açılışlar arasında alarm tutması yeterli; JS fazlasını iptal eder.
+Alışkanlığın durumunu değiştiren yeni bir yer eklersen `syncNotif(h,true)` çağır.
 
 ## Firebase
 

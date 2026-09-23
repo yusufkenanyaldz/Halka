@@ -3305,8 +3305,8 @@
       b.innerHTML=html;
     }
 
-    function edSaveName(id){var h=fH(id);if(!h)return;var v=document.getElementById('edName').value.trim();if(v&&v!==h.name){h.name=v;sv();document.getElementById('dTit').textContent=v;toast('İsim güncellendi')}}
-    function edType(id){var h=fH(id);if(!h)return;h.type=h.type==='gain'?'quit':'gain';sv();renderDet(id);toast('Tür değiştirildi')}
+    function edSaveName(id){var h=fH(id);if(!h)return;var v=document.getElementById('edName').value.trim();if(v&&v!==h.name){h.name=v;syncNotif(h,true);sv();document.getElementById('dTit').textContent=v;toast('İsim güncellendi')}}
+    function edType(id){var h=fH(id);if(!h)return;h.type=h.type==='gain'?'quit':'gain';syncNotif(h,true);sv();renderDet(id);toast('Tür değiştirildi')}
     function edDays(id,d){var h=fH(id);if(!h)return;var done=cD(h);if(d<done){if(!confirm('Hedefi '+d+' güne düşürmek istediğine emin misin?'))return}h.targetDays=d;sv();renderDet(id);toast(d+' gün olarak güncellendi')}
     function edCustomDays(id){var h=fH(id);if(!h)return;var inp=document.getElementById('edCustomDay');var v=parseInt(inp.value);if(v&&v>=7&&v<=365){var done=cD(h);if(v<done){if(!confirm('Hedefi '+v+' güne düşürmek istediğine emin misin?'))return}h.targetDays=v;sv();renderDet(id);toast(v+' gün olarak güncellendi')}else{toast('7 ile 365 arası bir sayı gir')}}
     function edColor(id,c){var h=fH(id);if(!h)return;h.color=c;sv();renderDet(id)}
@@ -3315,23 +3315,49 @@
       if(v===null)h.schedule=null;
       else if(v==='weekdays')h.schedule='weekdays';
       else if(v==='custom')h.schedule=Array.isArray(h.schedule)?h.schedule:[0,1,2,3,4];
-      sv();renderDet(id);
+      syncNotif(h,true);sv();renderDet(id);
     }
     function edSchDay(id,d){
       var h=fH(id);if(!h||!Array.isArray(h.schedule))return;
       var idx=h.schedule.indexOf(d);
       if(idx>=0)h.schedule.splice(idx,1);else h.schedule.push(d);
       if(h.schedule.length===0)h.schedule.push(d);
-      h.schedule.sort();sv();renderDet(id);
+      h.schedule.sort();syncNotif(h,true);sv();renderDet(id);
     }
     function saveDayNote(id){var h=fH(id);if(!h)return;var inp=document.getElementById('dayNoteInp');if(!inp)return;var v=inp.value.trim();if(!h.notes)h.notes={};if(v)h.notes[td()]=v;else delete h.notes[td()];sv();toast(v?'Not kaydedildi':'Not silindi')}
     function edReminder(id){var h=fH(id);if(!h)return;var t=document.getElementById('edRemTime').value;if(!t){toast('Saat seç');return}h.reminder=t;sv();scheduleNotif(h);renderDet(id);toast('Hatırlatıcı ayarlandı: '+t)}
     function delReminder(id){var h=fH(id);if(!h)return;h.reminder='';sv();cancelNotif(h);renderDet(id);toast('Hatırlatıcı kaldırıldı')}
-    function scheduleNotif(h){
+    // Hatirlatici Android'de alarm olarak kurulur, uygulama kapaliyken de calar.
+    // Kurulu kalmasi gereken tek durum: saati var, arsivde degil, duraklatilmamis.
+    function remActive(h){return!!(h&&h.reminder&&!h.archived&&!h.paused)}
+    // Programdaki gunler, ISO numarasiyla: 1=Pzt ... 7=Paz (java.time.DayOfWeek ile ayni).
+    // h.schedule icinde 0=Pt ... 6=Pz tutuluyor (bkz. isScheduledDay).
+    function remDays(h){
+      if(h.schedule==='weekdays')return[1,2,3,4,5];
+      if(Array.isArray(h.schedule)&&h.schedule.length)return h.schedule.slice().sort().map(function(d){return d+1});
+      return[1,2,3,4,5,6,7];
+    }
+    function remMsg(h){return h.type==='gain'?'Bugün '+h.name+' hedefini tamamlamayı unutma!':'Bugün '+h.name+' konusunda temiz kalmayı unutma!'}
+    // Alarmi aliskanligin su anki durumuna esitle: aktifse (yeniden) kur, degilse iptal et.
+    // Ad, tur, program, duraklatma, arsiv degisince cagrilir. sessiz: izin isteme, toast gosterme.
+    function syncNotif(h,sessiz){
+      if(!h)return;
+      if(remActive(h))scheduleNotif(h,sessiz);
+      else if(h.reminder)cancelNotif(h);
+    }
+    function scheduleNotif(h,sessiz){
+      if(!remActive(h))return;
       if(window.HalkaBridge){
-        try{HalkaBridge.requestNotificationPermission();HalkaBridge.scheduleReminder(h.id,h.name,h.reminder,h.type==='gain'?'Bugün '+h.name+' hedefini tamamlamayı unutma!':'Bugün '+h.name+' konusunda temiz kalmayı unutma!')}
-        catch(e){toast('Bildirim hatası')}
+        try{
+          if(!sessiz)HalkaBridge.requestNotificationPermission();
+          // Yeni kopru gunleri de alir. Eski kopruyu 5 argumanla cagirmak olmaz:
+          // @JavascriptInterface metodu arguman sayisiyla eslesir, "metot yok" hatasi verir.
+          if(HalkaBridge.scheduleReminderDays)HalkaBridge.scheduleReminderDays(h.id,h.name,h.reminder,remMsg(h),JSON.stringify(remDays(h)));
+          else HalkaBridge.scheduleReminder(h.id,h.name,h.reminder,remMsg(h));
+        }
+        catch(e){if(!sessiz)toast('Bildirim hatası')}
       } else if('Notification' in window){
+        if(sessiz){if(Notification.permission==='granted'){if(!S.notifTimes)S.notifTimes={};S.notifTimes[h.id]=h.reminder}return}
         Notification.requestPermission().then(function(perm){
           if(perm==='granted'){
             // Zamanlanmış bildirim için günlük kontrol
@@ -3368,7 +3394,7 @@
       if(!S||!S.notifTimes||!('Notification' in window)||Notification.permission!=='granted')return;
       var now=new Date(),hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0'),cur=hh+':'+mm;
       S.habits.forEach(function(h){
-        if(!h.reminder||h.archived)return;
+        if(!remActive(h)||!isScheduledDay(h,td()))return;
         if(h.reminder===cur&&!h.days[td()]){
           var notifKey='notif_'+h.id+'_'+td();
           if(!sessionStorage.getItem(notifKey)){
@@ -3379,7 +3405,7 @@
       });
     }
     // ===== PAUSE / ARCHIVE / IMPORT =====
-    function pauseH(id){var h=fH(id);if(!h)return;h.paused=true;h.pausedAt=td();sv();toast(h.name+' duraklatıldı');renderDet(id)}
+    function pauseH(id){var h=fH(id);if(!h)return;h.paused=true;h.pausedAt=td();syncNotif(h,true);sv();toast(h.name+' duraklatıldı');renderDet(id)}
     function resumeH(id){var h=fH(id);if(!h)return;
       // Duraklatma süresindeki günleri atla — createdAt'ı ileri al
       if(h.pausedAt){
@@ -3394,9 +3420,9 @@
           }
         }
       }
-      h.paused=false;delete h.pausedAt;sv();toast(h.name+' devam ediyor');renderDet(id)}
-    function archiveH(id){if(!confirm('Bu alışkanlığı arşivlemek istediğine emin misin? Veriler korunur, ana ekrandan gizlenir.'))return;var h=fH(id);if(!h)return;h.archived=true;if(h.reminder)cancelNotif(h);sv();toast(h.name+' arşivlendi');goScreen('main')}
-    function unarchiveH(id){var h=fH(id);if(!h)return;if(S.habits.filter(function(x){return!x.archived}).length>=MX){toast('En fazla '+MX+' aktif alışkanlık olabilir, önce birini arşivle');return}h.archived=false;sv();toast(h.name+' geri yüklendi');renderSet()}
+      h.paused=false;delete h.pausedAt;syncNotif(h,true);sv();toast(h.name+' devam ediyor');renderDet(id)}
+    function archiveH(id){if(!confirm('Bu alışkanlığı arşivlemek istediğine emin misin? Veriler korunur, ana ekrandan gizlenir.'))return;var h=fH(id);if(!h)return;h.archived=true;syncNotif(h,true);sv();toast(h.name+' arşivlendi');goScreen('main')}
+    function unarchiveH(id){var h=fH(id);if(!h)return;if(S.habits.filter(function(x){return!x.archived}).length>=MX){toast('En fazla '+MX+' aktif alışkanlık olabilir, önce birini arşivle');return}h.archived=false;syncNotif(h,true);sv();toast(h.name+' geri yüklendi');renderSet()}
     function impD(){
       var inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
       inp.onchange=function(e){
@@ -3413,6 +3439,8 @@
               mode=confirm('Mevcut verilerin ÜZERİNE yazsın mı?\n\nTamam = Üzerine yaz\nİptal = Mevcut verilere ekle')?'replace':'merge';
             }
             if(mode==='replace'){
+              // Eski aliskanliklarin alarmlari Android'de kalir; yenileri acilista kurulur.
+              S.habits.forEach(function(h){if(h.reminder)cancelNotif(h)});
               S=data;
             } else {
               // Birlestir: ayni adli aliskanlik atlanir.
@@ -3733,7 +3761,9 @@
       init();
       setTimeout(checkWeeklySummary,500);
       if(S&&S.theme==='light'){document.body.classList.add('light');document.querySelector('meta[name="theme-color"]').content='#f5f5f8';if(window.HalkaBridge&&HalkaBridge.setLightStatusBar)HalkaBridge.setLightStatusBar(true)}
-      if(S&&S.habits){S.habits.forEach(function(h){if(h.reminder)scheduleNotif(h)})}
+      // Acilista alarmlari esitle: eskiden arsivli/duraklatilmis aliskanliklarinki
+      // de her acilista yeniden kuruluyordu; onlarinki burada iptal edilir.
+      if(S&&S.habits){S.habits.forEach(function(h){syncNotif(h,true)})}
       var _lastDate=td();
       setInterval(function(){var now=td();if(now!==_lastDate){_lastDate=now;if(S&&S.ob){renderMain();toast('Yeni gün başladı!')}}},30000);
       // Bildirim kontrolü her dakika

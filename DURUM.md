@@ -20,9 +20,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `f11eca9` | Firebase yarım inerse oda özelliği sessizce ölüyordu. Ana kütüphane inip alt modül inmeyince yedek kod patlıyor (`enableLogging`), `_fbDone` hiç true olmuyordu; ilk ekrandan "Katıl" hiçbir şey yapmıyordu. Artık modüller tek tek yedek CDN'den deneniyor, eksik kalırsa sahte bağlantı `window.firebase`'e dokunmadan kuruluyor, geç inen SDK'ya kendiliğinden geçiliyor. Mesaj artık sebebi söylüyor: cihaz çevrimiçiyken "İnternet bağlantısı gerekli" yerine "Oda sunucusuna bağlanılamadı". |
 
-| (son commit) | Çevrimdışı ve kurulum. Yazı tipleri Google yerine `fonts/`'tan geliyor (Türkçe harfler dahil). `manifest.webmanifest` ve simgeler eklendi, Chrome manifesti hatasız okuyor. `sw.js` uygulamayı önbelleğe alıyor: sunucu kapalıyken açılıyor, şebeke cevap vermezse 4 saniyede önbellekten açılıyor, çevrimiçiyken yeni sürüm hemen geliyor. |
+| `77349d3` | Çevrimdışı ve kurulum. Yazı tipleri Google yerine `fonts/`'tan geliyor (Türkçe harfler dahil). `manifest.webmanifest` ve simgeler eklendi, Chrome manifesti hatasız okuyor. `sw.js` uygulamayı önbelleğe alıyor: sunucu kapalıyken açılıyor, şebeke cevap vermezse 4 saniyede önbellekten açılıyor, çevrimiçiyken yeni sürüm hemen geliyor. |
 
-Testler: uygulama için 196 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Hatırlatıcılar. Arşivli ve duraklatılmış alışkanlıkların alarmı her açılışta yeniden kuruluyordu; artık açılışta iptal ediliyor. Duraklat/devam, arşivden çıkar, ad/tür/program değişikliği alarmı eşitliyor. Program Android'e yeni `scheduleReminderDays` ile ISO gün listesi olarak gidiyor (eski köprüde 4 argümanlı metoda düşülüyor). Açılışta izin istenmiyor. "Üzerine yaz" yedek yüklemede eski alarmlar iptal ediliyor. |
+
+Testler: uygulama için 223 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -44,25 +46,22 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### A. Teknik hatalar (Android'de de geçerli)
 
-1. **Hatırlatıcılar yanlış alışkanlıklara ve yanlış günlere kuruluyor.** Açılışta
-   (`init`, `if(h.reminder)scheduleNotif(h)`) arşivli ve duraklatılmış alışkanlıkların
-   hatırlatıcısı da yeniden kuruluyor; sahte köprüyle ölçüldü: 3 alışkanlıktan 3'ü için
-   `scheduleReminder` çağrıldı, olması gereken 1. `archiveH` hatırlatıcıyı iptal ediyor
-   ama `h.reminder`'ı silmiyor, `pauseH` hiç iptal etmiyor. `scheduleReminder`'a
-   program (hafta içi / özel günler) gönderilmiyor; Android her gün bildirim atar.
-   Her alışkanlık için açılışta ayrıca izin isteniyor.
-2. **Tur kapanınca bugünün kaydı kayboluyor.** `closeC()` bugünü de `h.history`'ye
+1. **Tur kapanınca bugünün kaydı kayboluyor.** `closeC()` bugünü de `h.history`'ye
    taşıyıp `h.days`'i boşaltıyor. Ölçüldü: 7 günlük hedef bugün tamamlanıp tur
    kapatılınca kartta yine "Tamamlandı / Yapamadım" çıkıyor, üstte "0/1 alışkanlık
    tamamlandı" yazıyor (`dayState` "done" diyor). Aynı `h.days[td()]` okuması widget'a
    (`pushWidgetData`), partner özetine (`fbSyncShared`) ve hatırlatıcı kontrolüne de gidiyor.
-3. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
+2. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
    hafta sonu da paydaya giriyor, oran olduğundan düşük çıkıyor.
-4. **Partner özetindeki toplam** paylaşılanları değil bütün alışkanlıkları sayıyor
+3. **Partner özetindeki toplam** paylaşılanları değil bütün alışkanlıkları sayıyor
    (`fbSyncShared`, `total:act.length`, `done` da öyle).
-5. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
+4. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
 
 ### B. Android tarafında yapılması gerekenler (JS hatası değil, WebView ayarı)
+
+- **`scheduleReminderDays(id, ad, saat, mesaj, gunlerJson)`** eklenmeli; günler ISO
+  (1=Pzt … 7=Paz). Eklenmezse eski `scheduleReminder` kullanılır ve hafta içi
+  alışkanlığı hafta sonu da bildirim atar. Ayrıntı: CLAUDE.md, "Android köprüsü".
 
 - `setDomStorageEnabled(true)` — yoksa `localStorage` yok, veri kaydedilmez.
 - `WebChromeClient` atanmalı — atanmazsa `confirm()` hep `false` döner: silme,
