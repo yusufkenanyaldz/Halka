@@ -1144,6 +1144,7 @@
       fbDB.ref('rooms/'+S.roomId+'/members/'+fbUser.uid).remove();
       fbDB.ref('shared/'+S.roomId+'/'+fbUser.uid).remove();
     }
+    if(S.redDavet&&S.roomId)delete S.redDavet[S.roomId];
     delete S.roomId;delete S.roomCode;delete S.roomType;delete S.sharedHabits;
     S.partnerData=null;sv();toast('Odadan ayrıldın');renderSet();
   }
@@ -1174,14 +1175,20 @@
           var act=S.habits.filter(function(h){return!h.archived});
           var alreadyHave=act.find(function(h){return h.name.toLowerCase()===ph.name.toLowerCase()});
           if(alreadyHave)return;
-          // Daha önce reddedildi mi? (localStorage'da sakla)
-          var rejected=localStorage.getItem(inviteKey+'_rej');
-          if(rejected)return;
+          // Daha önce reddedildi mi? (S.redDavet, oda bazında)
+          if(redVar(S.roomId,hid))return;
           _seenInvites[inviteKey]=true;
           // Davet modalını göster
           setTimeout(function(){showInviteModal(pName,ph,inviteKey);},500);
         });
       });
+      // Hiçbir üyenin artık paylaşmadığı alışkanlığın reddi tutulmaz
+      var red=S.redDavet&&S.redDavet[S.roomId];
+      if(red){var degisti=false;Object.keys(red).forEach(function(hid){
+        var var_=Object.keys(data).some(function(uid){return uid!==fbUser.uid&&data[uid]&&data[uid].habits&&data[uid].habits[hid]});
+        if(!var_){delete red[hid];degisti=true}});
+        if(!Object.keys(red).length)delete S.redDavet[S.roomId];
+        if(degisti)sv()}
       // Refresh main if visible
       var mainScr=document.querySelector('#s-main.active');
       if(mainScr)renderPartnerArea();
@@ -1243,9 +1250,21 @@
     if(document.querySelector('#s-main.active'))renderMain();
   }
 
+  // Reddedilen davetler S.redDavet[odaId][hid] içinde: yedeğe girer, odadan ayrılınca ve
+  // "Tüm verileri sil" ile gider. Eskiden her biri ayrı localStorage anahtarıydı (inv_<oda>_<hid>_rej)
+  // ve hiç silinmiyordu; init'te redTasi() onları buraya taşır.
+  function redVar(oda,hid){return!!(S.redDavet&&S.redDavet[oda]&&S.redDavet[oda][hid])}
+  // Eski anahtarları S'e taşır; taşınanların adlarını döndürür (kaydedildikten sonra silinsin diye)
+  function redTasi(){
+    var tas=[];
+    try{Object.keys(localStorage).forEach(function(k){var m=k.match(/^inv_([^_]+)_(.+)_rej$/);if(!m)return;
+      if(!S.redDavet)S.redDavet={};if(!S.redDavet[m[1]])S.redDavet[m[1]]={};S.redDavet[m[1]][m[2]]=1;tas.push(k)})}catch(e){}
+    return tas;
+  }
   function rejectInvite(inviteKey){
     var modal=document.getElementById('inviteModal');if(modal)modal.remove();
-    localStorage.setItem(inviteKey+'_rej','1');
+    var m=inviteKey.match(/^inv_([^_]+)_(.+)$/);
+    if(m){if(!S.redDavet)S.redDavet={};if(!S.redDavet[m[1]])S.redDavet[m[1]]={};S.redDavet[m[1]][m[2]]=1;sv()}
     toast('Davet reddedildi');
   }
 
@@ -1829,6 +1848,7 @@
       var seenId={},fixedId=false;
       S.habits.forEach(function(h){while(seenId[h.id]){h.id=gid();fixedId=true}seenId[h.id]=true});
       if(fixedId)sv();
+      var redEski=redTasi();if(redEski.length){sv();try{redEski.forEach(function(k){localStorage.removeItem(k)})}catch(e){}}
       if(S.ob){goScreen('main');document.getElementById('bnav').style.display='flex'}
       else{goScreen('ob1');setTimeout(animD,600);spawnParticles()}      // Firebase auth — SDK hazır olunca başlat
       _fbReinit=function(){

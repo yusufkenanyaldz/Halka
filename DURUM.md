@@ -52,9 +52,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `1482189` | Metin tutarlılığı: ayarlarda İngilizce "Onboarding Tekrarla" (ve onay penceresinde "Onboarding") → "Tanıtımı Tekrar Göster". İstatistikteki "En uzun seri" şu anki serinin en büyüğünü gösteriyordu: dün kırılan 10 günlük seri "—", geçmiş turdaki 22 günlük seri "2 gün" görünüyordu; seri rozetleri (7/21/30 gün) de aynı değeri okuduğu için seri kırılınca geri alınıyordu. Artık `enUzunSeri(h)` ömür boyu rekoru hesaplar (cS ile aynı kural, geçmiş turlar dahil). Test: `test_metin.js`. |
 | `231c152` | Oda sekmesinde iki başlık alt alta: bireysel başlık (tarih, "Günaydın", bireysel "+", "0/4 alışkanlık tamamlandı", seviye, motivasyon) `#selfModeContent` dışında kaldığı için oda başlığının üstünde de çiziliyordu; tarih ve "+" iki kez. Bireysel başlık bireysel içeriğe alındı; oda sekmesinde yalnız oda başlığı, bireysel başlığın yerinde. Test: `test_odabaslik.js`. |
 | `7d72d03` | Haftalık özetin başarı oranı paydası haftanın her gününü sayıyordu: hafta içi alışkanlığı 5/5 yapılınca "5/7 %71", 4 gün duraklatılmış alışkanlık "3/7 %43", pazar sabahı henüz işaretlenmemiş bugün yüzünden "6/7 %86". Artık `haftaGunSayilir`: yapılan her gün; yapılmayan gün yalnız programdaysa, duraklatılmamışsa (süren duraklatma `pausedAt` ile) ve geçmişse sayılır. Test: `test_haftaozet.js`. |
-| (son commit) | Partnere giden özet (`fbSyncShared` → `summary`) bütün alışkanlıkları sayıyordu: 5 alışkanlıktan 2'si paylaşılırken partner kartında "2/5 bugün" (doğrusu 1/2); paylaşılmayan alışkanlıkların sayısı ve bugünkü durumu odaya gidiyordu, hiç paylaşım yokken de. Artık özet yalnız paylaşılan ve bugün gerekli (`bugunGerekli`) alışkanlıkları sayar. Eski sürümdeki partner güncelleyene kadar eski sayıyı gönderir. Test: `test_partnerozet.js`. |
+| `44a8e45` | Partnere giden özet (`fbSyncShared` → `summary`) bütün alışkanlıkları sayıyordu: 5 alışkanlıktan 2'si paylaşılırken partner kartında "2/5 bugün" (doğrusu 1/2); paylaşılmayan alışkanlıkların sayısı ve bugünkü durumu odaya gidiyordu, hiç paylaşım yokken de. Artık özet yalnız paylaşılan ve bugün gerekli (`bugunGerekli`) alışkanlıkları sayar. Eski sürümdeki partner güncelleyene kadar eski sayıyı gönderir. Test: `test_partnerozet.js`. |
+| (son commit) | Reddedilen davetler her biri ayrı bir localStorage anahtarı (`inv_<oda>_<hid>_rej`) olarak yazılıyor, odadan ayrılınca ve "Tüm verileri sil"den sonra da kalıyor (ölçüm: 5 ret → 5 anahtar, silmeden sonra yine 5), yedeğe girmiyordu. Artık `S.redDavet[oda][hid]`: yedeğe girer, odadan ayrılınca o odanınki silinir, hiçbir üyenin artık paylaşmadığı alışkanlığın reddi temizlenir; eski anahtarlar açılışta taşınır (önce kaydedilir, sonra silinir). Test: `test_davet.js`. |
 
-Testler: uygulama için 882 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 895 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -76,7 +77,7 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### A. Teknik hatalar (Android'de de geçerli)
 
-1. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
+Listedeki bütün maddeler giderildi (bkz. yukarıdaki tablo).
 
 ### B. Android tarafında yapılması gerekenler (JS hatası değil, WebView ayarı)
 
