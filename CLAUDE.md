@@ -52,12 +52,14 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 - `cDAll(h)` — tüm turlardaki benzersiz "done" gün sayısı
 - `hStart(h)` — alışkanlığın ilk turunun başlangıç tarihi
 - `pctOf(pay, payda)` — 0-100 arası tamsayı yüzde
+- `bugunGerekli(h)` — bugün yapılması gerekiyor mu (duraklatılmamış, bugün programında).
+  Günlük "x/y", "Bugünü tamamladın", widget ve partner özeti bununla sayar
 - `checkGoals()` — hedefe ulaşıldı mı; `renderMain()` sonunda çağrılır
 
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (24 takım, 810 senaryo)
+bash tests/calistir.sh            # uygulama testleri (25 takım, 831 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 

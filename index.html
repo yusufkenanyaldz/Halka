@@ -1038,8 +1038,8 @@
     fbDB.ref('shared/'+S.roomId+'/'+fbUser.uid+'/habits').set(payload);
     fbDB.ref('shared/'+S.roomId+'/'+fbUser.uid+'/summary').set({
       name:S.user.name,avatar:S.user.avatar||'book',
-      done:act.filter(function(h){return dayState(h,td())==='done'}).length,
-      total:act.length,lastSeen:td()
+      done:act.filter(function(h){return bugunGerekli(h)&&dayState(h,td())==='done'}).length,
+      total:act.filter(bugunGerekli).length,lastSeen:td()
     });
   }
 
@@ -1889,6 +1889,7 @@
       if(!h)return;
       var todayS=td();
       if(dateStr!==todayS)return;
+      if(h.paused)return;             // duraklatilmis: ilerlemez (widget'ta da gosterilmez)
       if(todayS<h.createdAt)return;   // bugun kapanmis tura ait
       if(dayState(h,todayS)==='done')return;
       h.days[todayS]='done';
@@ -2035,6 +2036,9 @@
 
     // Shared/self filter helpers
     function _isShared(h){return S&&S.sharedHabits&&S.sharedHabits.indexOf(h.id)>=0}
+    // Bugün yapılması gereken: duraklatılmamış ve bugün programında. Günlük "x/y", "Bugünü
+    // tamamladın", motivasyon, widget ve partner özeti bununla sayar (tur ilerlemesi değil).
+    function bugunGerekli(h){return!h.paused&&isScheduledDay(h,td())}
     function _selfHabits(){if(!S||!S.habits)return[];return S.habits.filter(function(h){return!h.archived&&!_isShared(h)})}
     function _sharedHabits(){if(!S||!S.habits)return[];return S.habits.filter(function(h){return!h.archived&&_isShared(h)})}
 
@@ -2226,23 +2230,25 @@
       var act=_selfHabits();
       var gainAct=act.filter(function(h){return h.type==='gain'});
       var quitAct=act.filter(function(h){return h.type==='quit'});
-      var dn=act.filter(function(h){return dayState(h,td())==='done'}).length;
+      var gun=act.filter(bugunGerekli);
+      var dn=gun.filter(function(h){return dayState(h,td())==='done'}).length;
       document.getElementById('mDate').textContent=getDateStr();
       document.getElementById('mGrt').textContent=getGrt()+', '+esc(S.user.name);
       // Sub
       var subH='';
-      if(act.length>0){subH='<span class="i i-s" style="color:var(--tx2)">'+IC.target+'</span> '+dn+'/'+act.length+' alışkanlık tamamlandı'}
+      if(gun.length>0){subH='<span class="i i-s" style="color:var(--tx2)">'+IC.target+'</span> '+dn+'/'+gun.length+' alışkanlık tamamlandı'}
+      else if(act.length>0){subH='<span class="i i-s" style="color:var(--tx2)">'+IC.target+'</span> '+(act.every(function(h){return h.paused})?'Tüm alışkanlıklar duraklatıldı':'Bugün programında alışkanlık yok')}
       var sharedC=_sharedHabits().length;
       if(sharedC>0&&act.length===0){subH='<span class="i i-s" style="color:var(--tx2)">'+IC.target+'</span> '+sharedC+' ortak alışkanlık'}
       document.getElementById('mSub').innerHTML=subH;
       // Motivational
       var motivEl=document.getElementById('mMotiv');
-      if(act.length>0){motivEl.innerHTML='<div class="m-motiv-txt">'+getMotiv(dn,act.length)+'</div>'}
+      if(gun.length>0){motivEl.innerHTML='<div class="m-motiv-txt">'+getMotiv(dn,gun.length)+'</div>'}
       else{motivEl.innerHTML=''}
       // All done banner (replaces big tick)
-      renderAllDoneBanner(act,dn);
+      renderAllDoneBanner(gun,dn);
       // Orbs
-      var progress=act.length>0?dn/act.length:0;
+      var progress=gun.length>0?dn/gun.length:0;
       var orbs=document.querySelectorAll('.mesh .orb');
       if(orbs.length>=3){orbs[0].style.opacity=0.06+progress*0.08;orbs[1].style.opacity=0.05+progress*0.06;orbs[2].style.opacity=0.04+progress*0.07}
       var addBtn=document.getElementById('mAdd');
@@ -2533,7 +2539,7 @@
 
     function renderStreak(){
       var hs=_selfHabits(),el=document.getElementById('streakA');
-      if(!hs.length){el.innerHTML='';return}
+      if(!hs.some(function(h){return!h.paused})){el.innerHTML='';return}
       var best=0,bestN='',bestH=null;
       hs.forEach(function(h){var s=cS(h);if(s>best){best=s;bestN=h.name;bestH=h}});
       if(best>0){
@@ -2773,11 +2779,12 @@
       try{
         var act=_selfHabits();
         if(!S.widgetHabits||!S.widgetHabits.length)S.widgetHabits=act.map(function(h){return h.id;});
-        var widgetHabits=S.widgetHabits.map(function(id){return fH(id);}).filter(Boolean);
-        var dn=act.filter(function(h){return dayState(h,td())==='done'}).length;
+        var widgetHabits=S.widgetHabits.map(function(id){return fH(id);}).filter(function(h){return h&&!h.paused});
+        var gun=act.filter(bugunGerekli);
+        var dn=gun.filter(function(h){return dayState(h,td())==='done'}).length;
         var bestStreak=0;act.forEach(function(h){var s=cS(h);if(s>bestStreak)bestStreak=s;});
         var payload={
-          date:td(),done:dn,total:act.length,streak:bestStreak,
+          date:td(),done:dn,total:gun.length,streak:bestStreak,
           size:S.widgetSize||'4x2',
           habits:widgetHabits.map(function(h){
             var doneN=cD(h);
@@ -2797,11 +2804,12 @@
       var act=_selfHabits();
       if(!act.length)return'<div style="padding:20px;color:var(--tx3);font-size:13px;text-align:center;border:1px dashed var(--bd2);border-radius:16px;margin-bottom:12px">Alışkanlık ekleyince<br>widget önizlemesi görünür</div>';
       if(!S.widgetHabits||!S.widgetHabits.length)S.widgetHabits=act.map(function(h){return h.id;});
-      var wHabits=S.widgetHabits.map(function(id){return fH(id);}).filter(Boolean);
-      var dn=act.filter(function(h){return dayState(h,td())==='done'}).length;
+      var wHabits=S.widgetHabits.map(function(id){return fH(id);}).filter(function(h){return h&&!h.paused});
+      var gun=act.filter(bugunGerekli);
+      var dn=gun.filter(function(h){return dayState(h,td())==='done'}).length;
       var bestStreak=0;
       act.forEach(function(h){var s=cS(h);if(s>bestStreak)bestStreak=s;});
-      var allDone=dn===act.length&&act.length>0;
+      var allDone=dn===gun.length&&gun.length>0;
 
       function makeRing(h,sz){
         var doneN=cD(h);
@@ -3059,7 +3067,7 @@
       h.days[td()]='done';sv();
       showU(h.type==='gain'?'Tamamlandı olarak kaydedildi':'Temiz kaldım olarak kaydedildi',function(){if(prev)h.days[td()]=prev;else delete h.days[td()];sv();renderMain()});
       // Room all-done confetti
-      if(_isShared(h)){var sh=_sharedHabits();if(sh.length>0&&sh.every(function(x){return dayState(x,td())==='done'})){setTimeout(spConf,300)}}
+      if(_isShared(h)){var sh=_sharedHabits().filter(bugunGerekli);if(sh.length>0&&sh.every(function(x){return dayState(x,td())==='done'})){setTimeout(spConf,300)}}
       setTimeout(function(){var fl=document.getElementById('flash-'+id);if(fl){fl.style.background=h.color;fl.classList.add('go')}renderMain()},80);
     }
     function mkMs(id){
