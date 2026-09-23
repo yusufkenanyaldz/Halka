@@ -72,7 +72,7 @@
     .hc.shaking .hc-inner{border-color:rgba(240,152,152,.2) !important}
 
     /* Milestone */
-    .ms-ov{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
+    .ms-ov{position:fixed;inset:0;background:rgba(8,8,16,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
     .ms-ov.show{display:flex}
     .ms-in{text-align:center;animation:celebPop .7s cubic-bezier(.16,1,.3,1);padding:0 24px}
     .ms-badge{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:milestoneGlow 2s ease infinite;font-size:44px}
@@ -534,14 +534,17 @@
     .btn-del:active{transform:scale(.97);background:rgba(240,96,96,.15)}
 
     /* Celebration */
-    .cov{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
+    .cov{position:fixed;inset:0;background:rgba(8,8,16,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
     .cov.show{display:flex}
     .cin{text-align:center;animation:celebPop .7s cubic-bezier(.16,1,.3,1);padding:0 24px}
     .ctr{width:88px;height:88px;margin:0 auto 24px;color:var(--honey)}
     .ctr svg{width:100%;height:100%}
     .cov h2{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;margin-bottom:10px}
     .cov p{font-size:15px;color:var(--tx2);margin-bottom:28px;max-width:280px;line-height:1.55}
-    .conf{position:fixed;border-radius:3px;z-index:201;animation:confFall 1.8s ease forwards}
+    .conf{position:fixed;border-radius:3px;z-index:201;animation:confFall 1.8s ease forwards;pointer-events:none}
+    /* Katman aciksa konfeti katmanin icine, yazi ve dugmenin ALTINA duser (spConf) */
+    .cov>*,.ms-ov>*{position:relative;z-index:1}
+    .cov>.conf,.ms-ov>.conf{position:fixed;z-index:0}
 
     /* Undo */
     .undo{position:fixed;bottom:calc(var(--nh)+16px);left:16px;right:16px;background:var(--bg3);border:1px solid var(--bd2);border-radius:20px;padding:14px 18px;display:none;align-items:center;gap:14px;z-index:120;animation:undoIn .35s cubic-bezier(.16,1,.3,1);box-shadow:0 12px 40px rgba(0,0,0,.6)}
@@ -3098,7 +3101,17 @@
       // seriyi geriye donuk kiriyor (ya da joker harciyordu).
       var yb=new Date(td()+'T00:00:00');if(h.days[td()])yb.setDate(yb.getDate()+1);
       h.round++;h.days={};h.createdAt=ds(yb);sv();toast(h.name+' — '+h.round+'. tur başladı!')}renderMain()}
-    function spConf(){document.querySelectorAll('.conf').forEach(function(c){c.remove()});var cs=['#e8a0c8','#a0c8e8','#a0e8c8','#e8c8a0','#c8a0e8','#f0d88e','#f0b8a5'];for(var i=0;i<40;i++){var el=document.createElement('div');el.className='conf';el.style.left=Math.random()*100+'vw';el.style.top=50+Math.random()*40+'vh';el.style.background=cs[Math.floor(Math.random()*cs.length)];el.style.animationDelay=Math.random()*.7+'s';el.style.animationDuration=1.2+Math.random()*1.5+'s';el.style.width=6+Math.random()*10+'px';el.style.height=6+Math.random()*10+'px';el.style.borderRadius=Math.random()>.5?'50%':'3px';document.body.appendChild(el);setTimeout(function(){el.remove()},3500)}}
+    // Konfeti. Acik kutlama katmani varsa onun icine (yazinin altina) duser; yoksa sayfaya.
+    // Eskiden: sayfaya z-index 201 ile ekleniyordu (baslik ve dugmenin ustune biniyordu),
+    // silme zamanlayicisi kapanis hatasiyla yalniz sonuncuyu siliyordu; 39 gorunmez
+    // parca kalip dokunmalari yakaliyordu.
+    function spConf(){
+      document.querySelectorAll('.conf').forEach(function(c){c.remove()});
+      var kap=document.querySelector('#cOv.show,#msOv.show')||document.body;
+      var cs=['#e8a0c8','#a0c8e8','#a0e8c8','#e8c8a0','#c8a0e8','#f0d88e','#f0b8a5'],els=[];
+      for(var i=0;i<40;i++){var el=document.createElement('div');el.className='conf';el.style.left=Math.random()*100+'vw';el.style.top=50+Math.random()*40+'vh';el.style.background=cs[Math.floor(Math.random()*cs.length)];el.style.animationDelay=Math.random()*.7+'s';el.style.animationDuration=1.2+Math.random()*1.5+'s';el.style.width=6+Math.random()*10+'px';el.style.height=6+Math.random()*10+'px';el.style.borderRadius=Math.random()>.5?'50%':'3px';kap.appendChild(el);els.push(el)}
+      setTimeout(function(){els.forEach(function(e){e.remove()})},3500);
+    }
 
     function renderAdd(){
       var nm=document.getElementById('addNm');if(nm)_an=nm.value;

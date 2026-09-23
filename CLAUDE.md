@@ -54,7 +54,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (19 takım, 621 senaryo)
+bash tests/calistir.sh            # uygulama testleri (20 takım, 643 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -85,10 +85,13 @@ Bunların hepsi bu depoda gerçekten yaşandı:
    Günler geçince olan hatalar için saati `page.clock.setFixedTime` ile ilerlet ve sayfayı
    yenile; veriyi geriye kaydırarak taklit etmek `autoMiss`'in gerçek yolunu atlayabilir
    (bkz. `tests/test_turkapanis.js`).
-6. **Çevrimdışını `setOffline` ile taklit etme.** Servis çalışanının isteklerini her
+6. **`elementFromPoint` `pointer-events:none` öğeyi görmez.** Boyama sırasını
+   ölçüyorsan (ör. konfeti yazının üstünde mi) o öğeye geçici olarak
+   `pointer-events:auto` ver; yoksa ölçüm boşuna geçer (bkz. `tests/test_kutlama.js`).
+7. **Çevrimdışını `setOffline` ile taklit etme.** Servis çalışanının isteklerini her
    zaman kesmiyor, test sahte geçer. `tests/test_offline.js` yerel sunucuyu gerçekten
    kapatıyor; zayıf şebeke için isteği cevapsız bırakıyor.
-7. **Düzeneği sına.** Kuralları kasten açıp testlerin kırmızıya döndüğünü gör.
+8. **Düzeneği sına.** Kuralları kasten açıp testlerin kırmızıya döndüğünü gör.
    Geçen bir test, bir şey ölçtüğünü kanıtlamaz.
 
 ## Android köprüsü (`HalkaBridge`)
