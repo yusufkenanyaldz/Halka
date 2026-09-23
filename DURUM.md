@@ -50,9 +50,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `07c9782` | Kısa ekranda halka ekranı kaplıyordu: halka her ekranda sabit 270 px; başlık, halka, seri ve haftalık hedef kartlarından sonra gelen "Bugün" listesinin ilk kartı 320×640, 360×640 ve hatta 360×800'de kaydırmadan hiç görünmüyordu. Kullanıcının seçimiyle (B): halka ekran yüksekliğine göre küçülür (640'ta 180 px, 730 px ve üstünde 270 px) ve "Bugün" listesi halkanın hemen altına alındı (seri ve haftalık hedef listenin altında). Merkezdeki yazı halkayla aynı oranda küçülür (`--hk`, `halkaOlcek`); iç boşluk yazıyı taşıyamazsa merkezde yalnız yüzde kalır, seçili alışkanlığın bilgisi halkanın altına tek satır iner (`#rAlt`). Bu, uzun ekranda da eskiden beri olan bir taşmayı giderdi: 2+ halkada seçili bilgisi halkaların üstüne 10–28 px taşıyordu. Test: `test_kisaekran.js`; ortak ekran turuna `ana-secili` eklendi. |
 | `9942f31` | Günlük sayım duraklatılmış ve bugün programında olmayan alışkanlığı da sayıyordu: bir alışkanlık duraklatılınca (ya da hafta sonu hafta içi alışkanlığı varken) etkin olanların hepsi yapılsa bile "1/2 tamamlandı" yazıyor, "Bugünü tamamladın" afişi ve "hepsi bitti" motivasyonu hiç çıkmıyordu; widget ve partnere giden özet de aynı yanlış sayıyı taşıyordu, duraklatılmış bir ortak alışkanlık oda konfetisini engelliyordu. Yalnız duraklatılmış alışkanlık varken "Seri başlatmadın, Bugün ilk adımı at!" ve "harekete geç" yazıyordu; widget'tan dokunulunca duraklatılmış alışkanlık ilerliyordu. Artık hepsi `bugunGerekli(h)` (duraklatılmamış ve bugün programında) ile sayar; hiç gerekli yoksa "Tüm alışkanlıklar duraklatıldı" / "Bugün programında alışkanlık yok". Test: `test_duraklat.js`. |
 | `1482189` | Metin tutarlılığı: ayarlarda İngilizce "Onboarding Tekrarla" (ve onay penceresinde "Onboarding") → "Tanıtımı Tekrar Göster". İstatistikteki "En uzun seri" şu anki serinin en büyüğünü gösteriyordu: dün kırılan 10 günlük seri "—", geçmiş turdaki 22 günlük seri "2 gün" görünüyordu; seri rozetleri (7/21/30 gün) de aynı değeri okuduğu için seri kırılınca geri alınıyordu. Artık `enUzunSeri(h)` ömür boyu rekoru hesaplar (cS ile aynı kural, geçmiş turlar dahil). Test: `test_metin.js`. |
-| (son commit) | Oda sekmesinde iki başlık alt alta: bireysel başlık (tarih, "Günaydın", bireysel "+", "0/4 alışkanlık tamamlandı", seviye, motivasyon) `#selfModeContent` dışında kaldığı için oda başlığının üstünde de çiziliyordu; tarih ve "+" iki kez. Bireysel başlık bireysel içeriğe alındı; oda sekmesinde yalnız oda başlığı, bireysel başlığın yerinde. Test: `test_odabaslik.js`. |
+| `231c152` | Oda sekmesinde iki başlık alt alta: bireysel başlık (tarih, "Günaydın", bireysel "+", "0/4 alışkanlık tamamlandı", seviye, motivasyon) `#selfModeContent` dışında kaldığı için oda başlığının üstünde de çiziliyordu; tarih ve "+" iki kez. Bireysel başlık bireysel içeriğe alındı; oda sekmesinde yalnız oda başlığı, bireysel başlığın yerinde. Test: `test_odabaslik.js`. |
+| (son commit) | Haftalık özetin başarı oranı paydası haftanın her gününü sayıyordu: hafta içi alışkanlığı 5/5 yapılınca "5/7 %71", 4 gün duraklatılmış alışkanlık "3/7 %43", pazar sabahı henüz işaretlenmemiş bugün yüzünden "6/7 %86". Artık `haftaGunSayilir`: yapılan her gün; yapılmayan gün yalnız programdaysa, duraklatılmamışsa (süren duraklatma `pausedAt` ile) ve geçmişse sayılır. Test: `test_haftaozet.js`. |
 
-Testler: uygulama için 864 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 875 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -74,11 +75,9 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### A. Teknik hatalar (Android'de de geçerli)
 
-1. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
-   hafta sonu da paydaya giriyor, oran olduğundan düşük çıkıyor.
-2. **Partner özetindeki toplam** paylaşılanları değil bütün alışkanlıkları sayıyor
+1. **Partner özetindeki toplam** paylaşılanları değil bütün alışkanlıkları sayıyor
    (`fbSyncShared`, `total:act.length`, `done` da öyle).
-3. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
+2. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
 
 ### B. Android tarafında yapılması gerekenler (JS hatası değil, WebView ayarı)
 
