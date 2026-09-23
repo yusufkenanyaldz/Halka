@@ -1,6 +1,6 @@
 // Kart uzerindeki mini halka: ortadaki sayi yuzde oldugunu gostersin ("%76"),
 // halkanin ic dairesine sigsin (%100 dahil), ekran okuyucuya anlamini soylesin.
-// Kazanma turunde sayi ilerleme, birakma turunde kalan yuzdedir (halka bosalir).
+// Iki turde de sayi ilerlemedir (birakma turunde eskiden kalan yuzdeydi).
 const path=require('path');
 
 const run = async (url) => {
@@ -16,7 +16,7 @@ const run = async (url) => {
     await p.goto(url); await p.waitForTimeout(1500);
     // done gun sayisi -> beklenen metin
     const K=[['g0','gain',21,0,'%0','tamamlandı'],['g5','gain',21,1,'%5','tamamlandı'],['g76','gain',21,16,'%76','tamamlandı'],['g95','gain',21,20,'%95','tamamlandı'],
-             ['q100','quit',30,0,'%100','kaldı'],['q78','quit',90,20,'%78','kaldı']];
+             ['q0','quit',30,0,'%0','tamamlandı'],['q22','quit',90,20,'%22','tamamlandı'],['q100','quit',21,21,'%100','tamamlandı']];
     await p.evaluate(K=>{
       function g(n){var d=new Date();d.setDate(d.getDate()-n);return ds(d)}
       S.ob=true;S.user={name:'Y'};S.milestones={};

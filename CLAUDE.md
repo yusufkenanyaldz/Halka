@@ -40,6 +40,10 @@ Turu kapatan gün eski tura aittir. `closeC()` bugün eski turda işaretliyse ye
 `mkDn`/`mkMs`/`undoDn`/`widgetComplete` bu durumda yazmaz. Yazmalar (`h.days[td()]=...`)
 her zaman içinde bulunulan tura gider.
 
+Yüzde her yerde **ilerlemedir**, iki türde de (`pctOf(cD(h), h.targetDays)`); bırakma
+türünde halka boştan dolar. "Kalan gün" yalnız etikette yazılır. Partnere giden veride
+`pctTur:'ilerleme'` vardır; bu işaret olmayan bırakma yüzdesi eski sürümdendir (kalan).
+
 Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 - `dayState(h, tarih)` — günün durumu, geçmiş turlar dahil
 - `cDAll(h)` — tüm turlardaki benzersiz "done" gün sayısı
@@ -50,7 +54,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (18 takım, 596 senaryo)
+bash tests/calistir.sh            # uygulama testleri (19 takım, 621 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 

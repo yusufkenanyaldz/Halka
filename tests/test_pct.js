@@ -58,11 +58,12 @@ const run = async (url) => {
 
     // === quit (birakmak) tarafi ===
     S.habits=[a]; setup(a,'quit',10,0);
-    res.push({t:'REG quit 0/10 -> %100 temiz', beklenen:100, cikan:ringPct()});
+    // Birakma turu de ilerleme gosterir (eskiden kalan yuzde: 0/10 -> %100)
+    res.push({t:'REG quit 0/10 -> %0 ilerleme', beklenen:0, cikan:ringPct()});
     setup(a,'quit',10,4);
-    res.push({t:'REG quit 4/10 -> %60 temiz', beklenen:60, cikan:ringPct()});
+    res.push({t:'REG quit 4/10 -> %40 ilerleme', beklenen:40, cikan:ringPct()});
     setup(a,'quit',10,30);
-    res.push({t:'quit hedefi asmis 30/10 -> %0', beklenen:0, cikan:ringPct()});
+    res.push({t:'quit hedefi asmis 30/10 -> %100 (asmaz)', beklenen:100, cikan:ringPct()});
 
     // === pctOf dogrudan ===
     if(typeof pctOf==='function'){

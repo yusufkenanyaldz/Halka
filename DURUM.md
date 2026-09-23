@@ -38,9 +38,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `7eee0d0` | Geriye dönük doldurma çubukları listeyi boğuyordu: 8 alışkanlıkta 23 ayrı çubuk, listeye 973 px (ekranın 1,2 katı), 40 altı çizili bağlantı, 17 px dokunma hedefi; oda görünümünde ayrı kopya kod 2 günle. Artık alışkanlık başına tek özet satırı ("İşaretsiz: Dün, Pzt, Paz" + "Doldur"), açılınca her gün için 44 px düğmeler, son gün işaretlenince kayboluyor; iki görünüm aynı `ydHtml`'i kullanıyor. Liste yükü 973 → 331 px. Taşma denetimine "üst üste binme" eklendi. |
 
-| (son commit) | Mini halkadaki sayı yüzde ama işaretsizdi ("76" yanında "16/21"; gün sayısı sanılabiliyordu), ekran okuyucuya anlamı söylenmiyordu. Artık "%76", yüzde işareti küçük ki "%100" iç daireye payla sığsın (23×13 px, iç daire 29 px); halkada `aria-label` "%76 tamamlandı" / bırakmada "%78 kaldı". Ana liste ve oda görünümü. |
+| `0eaad7f` | Mini halkadaki sayı yüzde ama işaretsizdi ("76" yanında "16/21"; gün sayısı sanılabiliyordu), ekran okuyucuya anlamı söylenmiyordu. Artık "%76", yüzde işareti küçük ki "%100" iç daireye payla sığsın (23×13 px, iç daire 29 px); halkada `aria-label` "%76 tamamlandı" / bırakmada "%78 kaldı". Ana liste ve oda görünümü. |
 
-Testler: uygulama için 596 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Bırakma türü kalan yüzdeyi gösteriyordu ("Sigara %97 · 1/30", halka azalıyor), kazanma türü ilerlemeyi; ilerleme sanılabiliyordu. Karar: iki tür de ilerleme. Kart, büyük halka (sayı ve yay), oda halkası, ayrıntı, istatistik, widget verisi ve partnere giden veri; etiketlerde "Y kaldı" duruyor. Partner verisine `pctTur:'ilerleme'` eklendi; eski sürümden gelen bırakma yüzdesi (işaretsiz) okurken çevriliyor. |
+
+Testler: uygulama için 621 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -103,10 +105,6 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 7. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
    ("Günaydın, Yusuf", tarih, "+") ve oda başlığı (tarih, "Eş / Sevgili", "+") birlikte
    görünüyor; tarih satırı ve "+" düğmesi iki kez. (23 Eylül, doldurma çubuğu işinde görüldü.)
-8. **Bırakma türünde halka kalan yüzdeyi gösteriyor.** "Sigara %97 · 1/30": halka ve sayı
-   ilerledikçe azalıyor (geri sayım), kazanma türünde artıyor. Artık işaretli ve ekran
-   okuyucu "kaldı" diyor, ama gözle bakan kullanıcı ilerleme sanabilir. Tasarım kararı:
-   ya iki tür de ilerleme göstersin ya da bırakmada "kaldı" görünür yazılsın.
 
 ## Yayın hakkında bir not
 
