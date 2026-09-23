@@ -23,6 +23,8 @@ const EKRANLAR = [
   ['ana',        ()=>{navTo('main');renderMain()},                    [0,700,1400,2200]],
   ['ana-doldur', ()=>{navTo('main');flipMedal(false,true);if(typeof ydGunler==='function'){var h=S.habits.find(function(x){return!x.archived&&!x.paused&&x.type==='gain'&&ydGunler(x).length});if(h){_ydAcik[h.id]=true}}renderMain()}, [0,700,1400,2200]],
   ['ana-birak',  ()=>{navTo('main');flipMedal(true,true)},            [0]],
+  // Secili halka: bilgi halkanin altinda tek satir (#rAlt), uzun ad dahil
+  ['ana-secili', ()=>{navTo('main');flipMedal(false,true);renderMain();_selRingActive=-1;ringTapActive(1)}, [0]],
   ['detay',      ()=>{flipMedal(false,true);openDet('h0')},                                  [0,700,1400,2200]],
   ['detay-birak',()=>{openDet(S.habits[2].id)},                        [0,1400]],
   ['detay-durak',()=>{openDet(S.habits[4].id)},                        [0,1400]],

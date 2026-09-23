@@ -318,7 +318,16 @@
     .medal-face-single.flip-out{transform:scaleX(0)}
     .medal-face-single.flip-in{transform:scaleX(1);transition:transform 0.18s ease-out}
     .medal-face-single svg{width:100%;height:100%;display:block}
-    .ring-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:2;width:120px;pointer-events:none}
+    /* --hk: halkanın 270px'e oranı (halkaOlcek); merkezdeki yazı halkayla birlikte küçülür */
+    .ring-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(var(--hk,1));text-align:center;z-index:2;width:120px;pointer-events:none}
+    /* İç boşluk (halka sayısı ve ekran yüksekliğine göre) yazıyı taşıyamazsa (hkYaz):
+       hk-kucuk: seçili alışkanlığın bilgisi merkezden halkanın altına (#rAlt) iner, merkezde yüzde kalır.
+       hk-dar: genel görünümde "genel ilerleme" etiketi de gizlenir. */
+    .hk-kucuk .ring-ctr.ring-sec .ring-lbl,.hk-kucuk .ring-ctr .ring-info-name,.hk-kucuk .ring-ctr .ring-info-streak,.hk-kucuk .ring-ctr .ring-info-dot,.hk-dar .ring-ctr .ring-lbl{display:none}
+    .ring-alt{display:none;align-items:center;justify-content:center;gap:6px;max-width:calc(100% - 32px);margin-top:8px;font-size:13px;color:var(--tx2)}
+    .ring-alt>span{white-space:nowrap;flex-shrink:0}
+    .ring-alt>.ad-tek{flex-shrink:1;min-width:0;font-weight:700;color:var(--tx)}
+    .hk-kucuk .ring-alt:not(:empty){display:flex}
     .ring-info-name{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:148px}
     .ring-info-streak{font-size:11px;color:var(--tx2);display:flex;align-items:center;justify-content:center;gap:3px;margin-top:3px}
     .ring-info-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:2px}
@@ -327,7 +336,9 @@
     .ring-lbl{font-size:12px;color:var(--tx2);margin-top:4px;font-weight:500}
     .ring-amb{position:absolute;top:50%;left:50%;width:180px;height:180px;transform:translate(-50%,-50%);border-radius:50%;animation:breathe 4s ease-in-out infinite;pointer-events:none;z-index:0}
     /* 3D ring depth on medal wrapper */
-    .medal-wrapper{position:relative;width:270px;height:270px;max-width:85vw;max-height:85vw;filter:drop-shadow(0 8px 24px rgba(0,0,0,.3))}
+    /* Boyut ekran yüksekliğine göre: kısa ekranda (640) 180px, 730px ve üstünde 270px;
+       böylece halka, açıklama ve "Bugün" listesinin ilk kartı kaydırmadan görünür */
+    .medal-wrapper{position:relative;width:clamp(180px,calc(100vh - 460px),270px);height:clamp(180px,calc(100vh - 460px),270px);max-width:85vw;max-height:85vw;filter:drop-shadow(0 8px 24px rgba(0,0,0,.3))}
     /* Flip button */
     .flip-btn{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;padding:8px 18px;border-radius:20px;border:1px solid var(--bd2);background:var(--sf);color:var(--tx2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .25s;-webkit-tap-highlight-color:transparent;user-select:none}
     .flip-btn:active{transform:scale(.93);background:var(--sf2)}
@@ -808,6 +819,7 @@
           <div class="ring-ctr" id="rCtrActive"></div>
         </div>
       </div>
+      <div class="ring-alt" id="rAlt"></div>
       <!-- Flip indicator — tıklanabilir nokta sistemi -->
       <div id="flipBtnArea"></div>
       <div class="face-tabs" id="faceTabs" style="display:none">
@@ -822,14 +834,15 @@
       </div>
     </div>
     <div class="ring-leg" id="rLeg"></div>
-    <div id="streakA"></div>
     <div id="storageWarnArea"></div>
-    <div id="weeklyGoalArea"></div>
-    <div id="wkSumArea"></div>
+    <!-- Günün listesi halkanın hemen altında: kısa ekranda kaydırmadan görünsün -->
     <div class="today-sec" id="todaySec">
       <div class="sec-t" id="todaySecTitle">Bugün</div>
       <div id="hCards"></div>
     </div>
+    <div id="streakA"></div>
+    <div id="weeklyGoalArea"></div>
+    <div id="wkSumArea"></div>
     <div class="empty" id="empBox" style="display:none">
       <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="var(--tx3)" stroke-width="1.5" style="margin-bottom:16px;opacity:.25"><circle cx="32" cy="32" r="28"/><circle cx="32" cy="32" r="18"/><circle cx="32" cy="32" r="8"/></svg>
       <p>Henüz alışkanlık eklemedin.</p>
@@ -1669,6 +1682,7 @@
     html+='<button class="btn btn-s" style="flex-shrink:0;padding:12px" onclick="copyRoomCode()" title="Kodu paylaş"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></button>';
     html+='</div>';
     el.innerHTML=html;
+    halkaOlcek();
   }
 
     // ===== ALIŞKANLık İKONLARI =====
@@ -2249,6 +2263,7 @@
       var emp=document.getElementById('empBox'),sec=document.getElementById('todaySec');
       // Bireysel alışkanlık yoksa boş halka çizilmez; yerini tek boş durum mesajı alır
       document.getElementById('rHero').style.display=act.length?'':'none';
+      if(act.length)halkaOlcek();
       if(!act.length){
         var sharedCount=_sharedHabits().length;
         if(sharedCount>0){
@@ -2429,14 +2444,30 @@
       else if(hs.length>0)amb.style.background='radial-gradient(circle,'+rga(hs[0].color,.12)+' 0%,transparent 70%)';
     }
 
+    // Halka ekran yüksekliğine göre küçülür (CSS .medal-wrapper). Merkezdeki yazı 270px'lik
+    // halkaya göre ölçülmüş; aynı oranda küçülsün diye oranı --hk olarak yazar.
+    // Etkin iç çap (270'e göre iç çap x oran): seçili bilgisi 150px, genel etiket 100px ister.
+    // İç çapı bilinmeyen halkada (oda) oran .9'un altındaysa etiket gizlenir.
+    function hkYaz(w){if(!w.offsetWidth)return;var k=w.offsetWidth/270;w.style.setProperty('--hk',k.toFixed(3));
+      var c=w.querySelector('.ring-ctr'),ic=c&&+c.getAttribute('data-ic'),e=ic?ic*k:(k<.9?0:999),kap=w.parentElement;
+      if(kap){kap.classList.toggle('hk-kucuk',e<150);kap.classList.toggle('hk-dar',e<100)}}
+    // Gizli halkanın genişliği 0'dır, atlanır; görünür yapan yer (renderMain) yeniden çağırır.
+    function halkaOlcek(){
+      document.querySelectorAll('.medal-wrapper').forEach(hkYaz);
+    }
+    window.addEventListener('resize',halkaOlcek);
+
     function showRingCenterActive(hs,faceType,selIdx){
       var ctrEl=document.getElementById('rCtrActive');
       if(!ctrEl)return;
+      var altEl=document.getElementById('rAlt');if(altEl)altEl.innerHTML='';
       // İç boşluk halka sayısına göre: n=1→baseR=110, n=2→baseR=72, n=3→62, n=4→56, n=5→50
       var innerDiams={1:160,2:108,3:90,4:80,5:72};
       var innerD=innerDiams[hs.length]||72;
       var fs=hs.length<=1?38:hs.length<=2?30:24;
-      ctrEl.style.width=innerD+'px';
+      ctrEl.style.width=innerD+'px';ctrEl.setAttribute('data-ic',innerD);
+      ctrEl.classList.toggle('ring-sec',!(selIdx===-1||!hs[selIdx]));
+      var mw=document.getElementById('medalWrapper');if(mw)hkYaz(mw);
       var cls=faceType==='gain'?'ring-pct-g':'ring-pct-q';
       if(selIdx===-1||!hs[selIdx]){
         var tD=0,tT=0;
@@ -2465,6 +2496,7 @@
           +'<div class="ring-pct">'+numHtml+'</div>'
           +'<div class="ring-info-streak"><span class="i" style="width:11px;height:11px;color:var(--honey)">'+IC.fire+'</span>'+streakLabel+'</div>'
           +'<div class="ring-lbl">'+pctLabel+'</div>';
+        if(altEl)altEl.innerHTML='<span class="ring-info-dot" style="background:'+h.color+';margin:0"></span><span class="ad-tek" title="'+esc(h.name)+'">'+esc(h.name)+'</span><span>'+pctLabel+'</span><span>'+streakLabel+'</span>';
         setTimeout(function(){var el=document.getElementById('rpNumA');if(el&&displayPct>0)animateCounterEl(el,displayPct)},50);
       }
     }
@@ -2479,6 +2511,7 @@
       if(activeHs.length>0)amb.style.background='radial-gradient(circle,'+rga(activeHs[0].color,.12)+' 0%,transparent 70%)';
       else if(act.length>0)amb.style.background='radial-gradient(circle,'+rga(act[0].color,.08)+' 0%,transparent 70%)';
       else amb.style.background='none';
+      halkaOlcek();
     }
 
     function renderLeg(){

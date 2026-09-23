@@ -46,9 +46,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `bd23083` | Uzun alışkanlık adı düzeni bozuyordu: istatistik satırında 3–4 satır (renk noktası eziliyordu), oda paylaşım listesinde 2–3 satır, halka açıklamasında "Spor" bir satırda yalnız kalıyordu; kart adı ve widget ayarlarında "…" ile kısalıyor ama tam ad hiçbir yerde okunmuyordu. Artık ad her yerde tek satır (`.ad-tek`), kısalınca tam ad `title`'da; açıklama öğesi en çok yarım genişlik. Bütün ekranları gezen test (`test_uzunad.js`). |
 | `eef84a9` | Widget ayarları ekranında geri düğmesi yoktu: ayarlar listesinin içine çiziliyor, çıkmak için alt menüye basmak gerekiyordu; Android geri tuşu (`handleBack`) ayarlardan doğrudan ana ekrana atıyordu (widget, oda kur/katıl/paylaş görünümlerinde de). Ekran listenin en altından açıldığı için kaydırma konumu da kayıyordu. Artık alt görünümler `setAltAc`/`setAltKapat`/`setAltBaslik` ile açılıp kapanıyor: üstte "‹ Geri" başlığı, en üstten açılır, geri dönünce liste eski kaydırma konumunda; Android geri tuşu önce ayarlar listesine döner. Ayrıca seçilen widget boyutu hiç işaretlenmiyordu (seçici 0 öğe buluyordu). Test: `test_altgorunum.js`. |
-| (son commit) | Boş ana ekran: bireysel alışkanlık yokken (hiç yok, hepsi arşivde ya da hepsi odada) 270 px'lik boş halka ve ortasında "Kazanılacak alışkanlık yok" çiziliyor, altında ikinci boş mesaj duruyordu; 320×640'ta "Alışkanlık Ekle" düğmesi alt menünün altında kalıyor, ekran 101 px kaydırılıyordu. Artık halka bölümü (`#rHero`) gizlenir, tek boş durum mesajı üstte ve düğme kaydırmadan görünür. Test: `test_bosana.js`. |
+| `0cb15ae` | Boş ana ekran: bireysel alışkanlık yokken (hiç yok, hepsi arşivde ya da hepsi odada) 270 px'lik boş halka ve ortasında "Kazanılacak alışkanlık yok" çiziliyor, altında ikinci boş mesaj duruyordu; 320×640'ta "Alışkanlık Ekle" düğmesi alt menünün altında kalıyor, ekran 101 px kaydırılıyordu. Artık halka bölümü (`#rHero`) gizlenir, tek boş durum mesajı üstte ve düğme kaydırmadan görünür. Test: `test_bosana.js`. |
+| (son commit) | Kısa ekranda halka ekranı kaplıyordu: halka her ekranda sabit 270 px; başlık, halka, seri ve haftalık hedef kartlarından sonra gelen "Bugün" listesinin ilk kartı 320×640, 360×640 ve hatta 360×800'de kaydırmadan hiç görünmüyordu. Kullanıcının seçimiyle (B): halka ekran yüksekliğine göre küçülür (640'ta 180 px, 730 px ve üstünde 270 px) ve "Bugün" listesi halkanın hemen altına alındı (seri ve haftalık hedef listenin altında). Merkezdeki yazı halkayla aynı oranda küçülür (`--hk`, `halkaOlcek`); iç boşluk yazıyı taşıyamazsa merkezde yalnız yüzde kalır, seçili alışkanlığın bilgisi halkanın altına tek satır iner (`#rAlt`). Bu, uzun ekranda da eskiden beri olan bir taşmayı giderdi: 2+ halkada seçili bilgisi halkaların üstüne 10–28 px taşıyordu. Test: `test_kisaekran.js`; ortak ekran turuna `ana-secili` eklendi. |
 
-Testler: uygulama için 747 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 810 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -97,11 +98,9 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
-    ulaşmak için kaydırmak gerekiyor.
-2. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+1. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
-3. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
+2. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
    ("Günaydın, Yusuf", tarih, "+") ve oda başlığı (tarih, "Eş / Sevgili", "+") birlikte
    görünüyor; tarih satırı ve "+" düğmesi iki kez. (23 Eylül, doldurma çubuğu işinde görüldü.)
 
