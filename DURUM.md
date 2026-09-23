@@ -54,9 +54,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `7d72d03` | Haftalık özetin başarı oranı paydası haftanın her gününü sayıyordu: hafta içi alışkanlığı 5/5 yapılınca "5/7 %71", 4 gün duraklatılmış alışkanlık "3/7 %43", pazar sabahı henüz işaretlenmemiş bugün yüzünden "6/7 %86". Artık `haftaGunSayilir`: yapılan her gün; yapılmayan gün yalnız programdaysa, duraklatılmamışsa (süren duraklatma `pausedAt` ile) ve geçmişse sayılır. Test: `test_haftaozet.js`. |
 | `44a8e45` | Partnere giden özet (`fbSyncShared` → `summary`) bütün alışkanlıkları sayıyordu: 5 alışkanlıktan 2'si paylaşılırken partner kartında "2/5 bugün" (doğrusu 1/2); paylaşılmayan alışkanlıkların sayısı ve bugünkü durumu odaya gidiyordu, hiç paylaşım yokken de. Artık özet yalnız paylaşılan ve bugün gerekli (`bugunGerekli`) alışkanlıkları sayar. Eski sürümdeki partner güncelleyene kadar eski sayıyı gönderir. Test: `test_partnerozet.js`. |
 | `daee05d` | Reddedilen davetler her biri ayrı bir localStorage anahtarı (`inv_<oda>_<hid>_rej`) olarak yazılıyor, odadan ayrılınca ve "Tüm verileri sil"den sonra da kalıyor (ölçüm: 5 ret → 5 anahtar, silmeden sonra yine 5), yedeğe girmiyordu. Artık `S.redDavet[oda][hid]`: yedeğe girer, odadan ayrılınca o odanınki silinir, hiçbir üyenin artık paylaşmadığı alışkanlığın reddi temizlenir; eski anahtarlar açılışta taşınır (önce kaydedilir, sonra silinir). Test: `test_davet.js`. |
-| (son commit) | Android geri tuşu: `handleBack()` hiçbir durumda değer döndürmüyordu (Android uygulamadan ne zaman çıkacağını bilemiyordu); kutlama, kilometre taşı ve davet penceresi geri tuşuyla kapanmıyordu (arkada ekran değişiyor, katman üstte kalıyordu); tanıtımın ilk ekranında geri tuşu tanıtım bitmeden ana ekrana atıyordu; tanıtım 3'teki alt panelden seçime değil 2. ekrana gidiyordu. Artık `true`/`false` döner (Android sözleşmesi CLAUDE.md'de), katmanları üstten kapatır (kutlamada düğmeyle aynı iş), tanıtımda adım adım geri gider. Test: `test_geritusu.js`. |
+| `57289ba` | Android geri tuşu: `handleBack()` hiçbir durumda değer döndürmüyordu (Android uygulamadan ne zaman çıkacağını bilemiyordu); kutlama, kilometre taşı ve davet penceresi geri tuşuyla kapanmıyordu (arkada ekran değişiyor, katman üstte kalıyordu); tanıtımın ilk ekranında geri tuşu tanıtım bitmeden ana ekrana atıyordu; tanıtım 3'teki alt panelden seçime değil 2. ekrana gidiyordu. Artık `true`/`false` döner (Android sözleşmesi CLAUDE.md'de), katmanları üstten kapatır (kutlamada düğmeyle aynı iş), tanıtımda adım adım geri gider. Test: `test_geritusu.js`. |
+| (son commit) | Android uygulaması: `android/` Android Studio projesi (WebView, `HalkaBridge`, hatırlatıcılar, widget, dosya kaydet/seç, onay pencereleri, geri tuşu) ve adım adım kurulum rehberi `android/BENIOKU.md`. JS: yedek dışa aktarma köprüde `saveFile` varsa onu kullanır (WebView `blob:` indirmez), köprü varken servis çalışanı kaydedilmez. Test: `test_kopru.js` (JS sözleşmesi), `bash tests/calistir.sh android` (XML, kaynaklar, Java derlemesi, hatırlatıcı zamanı). APK bu ortamda derlenemedi (Android SDK indirilemiyor). |
 
-Testler: uygulama için 910 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 921 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -80,24 +81,20 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 Listedeki bütün maddeler giderildi (bkz. yukarıdaki tablo).
 
-### B. Android tarafında yapılması gerekenler (JS hatası değil, WebView ayarı)
+### B. Android tarafı
 
-- **`scheduleReminderDays(id, ad, saat, mesaj, gunlerJson)`** eklenmeli; günler ISO
-  (1=Pzt … 7=Paz). Eklenmezse eski `scheduleReminder` kullanılır ve hafta içi
-  alışkanlığı hafta sonu da bildirim atar. Ayrıntı: CLAUDE.md, "Android köprüsü".
+`android/` projesinde yapıldı: `setDomStorageEnabled`, `WebChromeClient` (confirm/alert),
+dosya seçici (`onShowFileChooser`), `saveFile`, `scheduleReminderDays` (AlarmManager, yeniden
+başlatmada yeniden kurulur), widget, geri tuşu (`handleBack` false → `finish()`), web
+dosyalarının derlemede kopyalanması.
 
-- `setDomStorageEnabled(true)` — yoksa `localStorage` yok, veri kaydedilmez.
-- `WebChromeClient` atanmalı — atanmazsa `confirm()` hep `false` döner: silme,
-  arşivleme, "Tüm Verileri Sil", yedek yükleme hiç çalışmaz. 11 yerde `confirm/alert` var.
-- `onShowFileChooser` — "Yedekten Geri Yükle" `<input type=file>` açıyor; WebView bunu
-  kendiliğinden açmaz.
-- Dışa aktarma `blob:` bağlantısıyla `a.download` kullanıyor; WebView indirmez.
-  Köprüye bir "dosya kaydet" metodu gerekir (ör. `HalkaBridge.saveFile(ad, json)`).
-- Geri tuşu: JS tarafı hazır, `handleBack()` `true`/`false` döner. Android'de
-  `onBackPressed` içinde `evaluateJavascript("handleBack()")`, sonuç `"false"` ise `finish()`
-  (bkz. CLAUDE.md, "Android köprüsü").
-- `fonts/` ve `icons/` klasörleri `index.html` ile birlikte assets'e kopyalanmalı.
-  `sw.js` ve `manifest.webmanifest` WebView'da kullanılmaz, zararsız.
+Açık kalanlar:
+- **APK hiç derlenmedi.** Bu ortamda Android SDK indirilemiyor; Java derlemesi ve kaynaklar
+  denetlendi (`bash tests/calistir.sh android`), Gradle derlemesi ve telefonda çalışma
+  Android Studio'da ilk açılışta görülecek. Hata çıkarsa kullanıcı kırmızı yazıyı getirecek.
+- Widget çizimi (`HalkaWidget.ciz`) ve dokunma alanları telefonda görülmedi.
+- Firebase anonim girişinin `https://appassets.androidplatform.net` kökeninden çalıştığı
+  cihazda doğrulanmadı (Firebase konsolunda API anahtarı kısıtı varsa bu alan eklenmeli).
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 

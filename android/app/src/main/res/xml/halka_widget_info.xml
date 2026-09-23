@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Varsayılan 4x2; 4x1 ile 2x2 arası boyutlandırılabilir. updatePeriodMillis: gün değişince
+     (uygulama açılmasa da) "bugün yapıldı" işaretleri sıfırlansın diye ara sıra yeniden çizim. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_aciklama"
+    android:initialLayout="@layout/widget_buyuk"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:previewImage="@mipmap/ic_launcher"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

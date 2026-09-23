@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bildirim simgesi: Android yalniz saydamligini kullanir, rengi sistem verir -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M12.00,1.97 A10.03,10.03 0 1,1 2.15,10.12" android:strokeColor="#FFFFFFFF" android:strokeWidth="1.94" android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M12.00,5.16 A6.84,6.84 0 1,1 7.32,16.98" android:strokeColor="#FFFFFFFF" android:strokeWidth="1.94" android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M12.00,8.35 A3.65,3.65 0 1,1 9.51,9.34" android:strokeColor="#FFFFFFFF" android:strokeWidth="1.94" android:strokeLineCap="round" android:fillColor="#00000000" />
+</vector>

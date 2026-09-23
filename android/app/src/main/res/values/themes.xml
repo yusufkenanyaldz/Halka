@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Açılışta beyaz parlama olmasın: pencere zemini uygulamanın koyu zemini -->
+    <style name="Tema" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/zemin</item>
+        <item name="android:colorBackground">@color/zemin</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/zemin</item>
+        <item name="android:colorAccent">#b8a5f0</item>
+    </style>
+</resources>

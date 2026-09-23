@@ -912,7 +912,8 @@
   // ===== SERVIS CALISANI =====
   // Cevrimdisi acilis ve telefona kurulum icin (sw.js). file:// altinda ve
   // desteklemeyen tarayicilarda sessizce atlanir.
-  if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
+  // Android uygulamasında (HalkaBridge) dosyalar zaten cihazda: servis çalışanı gereksiz
+  if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.HalkaBridge){
     navigator.serviceWorker.register('sw.js').catch(function(e){console.warn('Servis çalışanı kaydedilemedi:',e.message)});
   }
 
@@ -3863,7 +3864,13 @@
     function edNm(){var cur=S.user.name;var el=document.querySelector('#seBox .si:first-child');el.outerHTML='<div class="si" style="flex-direction:column;align-items:stretch;gap:10px;cursor:default"><div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;color:var(--lav)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="8" r="4"/><path d="M3 18c0-4 3.1-7 7-7s7 3 7 7"/></svg></span><span style="font-size:15px;font-weight:600">Yeni İsim</span></div><div style="display:flex;gap:8px"><input class="ed-inp" id="setNameInp" value="'+esc(cur)+'" maxlength="20" style="flex:1" onkeydown="if(event.key===\'Enter\')saveSetName()"><button class="ed-apply" onclick="saveSetName()">Kaydet</button></div></div>';setTimeout(function(){var inp=document.getElementById('setNameInp');if(inp)inp.focus()},100)}
     function saveSetName(){var v=document.getElementById('setNameInp').value.trim();if(v&&v!==S.user.name){S.user.name=v;sv();toast('İsim güncellendi')}renderSet()}
     function resOB(){if(confirm('Tanıtım ekranları tekrar gösterilsin mi? Mevcut alışkanlıkların korunacak.')){S.ob=false;sv();sP=[];cTab='gain';screenHistory=['main'];document.getElementById('bnav').style.display='none';goScreen('ob1');setTimeout(animD,600);spawnParticles()}}
-    function expD(){var d=new Date();var dateStr=d.getFullYear()+''+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0');var data=JSON.parse(JSON.stringify(S));delete data.partnerData;var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='halka_yedek_'+dateStr+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000);toast('Veri indirildi')}
+    // Yedek dosyası. Android WebView blob indirmez: köprüde saveFile varsa dosyayı o yazar
+    // (dönüş: kaydedilen yer, "bekle" = kullanıcı konum seçiyor, "" = hata).
+    function expD(){var d=new Date();var dateStr=d.getFullYear()+''+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0');var data=JSON.parse(JSON.stringify(S));delete data.partnerData;
+      var ad='halka_yedek_'+dateStr+'.json',icerik=JSON.stringify(data,null,2);
+      if(window.HalkaBridge&&HalkaBridge.saveFile){var r='';try{r=HalkaBridge.saveFile(ad,icerik)}catch(e){r=''}
+        if(r==='bekle')return;toast(r?'Yedek kaydedildi: '+r:'Yedek kaydedilemedi');return}
+      var blob=new Blob([icerik],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=ad;a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000);toast('Veri indirildi')}
     function clrAll(){if(confirm('Tüm veriler silinecek! Bu işlem geri alınamaz.')){if(confirm('Gerçekten emin misin?')){S.habits.forEach(function(h){if(h.reminder)cancelNotif(h)});localStorage.removeItem(SK);location.reload()}}}
     function setTheme(t){if(t==='light'){document.body.classList.add('light');document.querySelector('meta[name="theme-color"]').content='#f5f5f8';if(window.HalkaBridge&&HalkaBridge.setLightStatusBar)HalkaBridge.setLightStatusBar(true)}else{document.body.classList.remove('light');document.querySelector('meta[name="theme-color"]').content='#0e0e1a';if(window.HalkaBridge&&HalkaBridge.setLightStatusBar)HalkaBridge.setLightStatusBar(false)}S.theme=t;sv();renderSet()}
 

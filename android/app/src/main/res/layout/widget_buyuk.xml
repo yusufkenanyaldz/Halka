@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 4x2 / 2x2: üstte başlık, altta halkalar. Resim HalkaWidget.ciz ile çizilir; dokunma
+     alanları (w_h0..w_h3) resimdeki halkalarla aynı oranda yerleşir: başlık 34, halkalar 66. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/w_resim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/uygulama_adi"
+        android:scaleType="fitXY" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="34" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="66"
+            android:orientation="horizontal">
+
+            <FrameLayout android:id="@+id/w_h0" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+            <FrameLayout android:id="@+id/w_h1" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+            <FrameLayout android:id="@+id/w_h2" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+            <FrameLayout android:id="@+id/w_h3" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

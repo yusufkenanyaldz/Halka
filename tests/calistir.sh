@@ -2,12 +2,17 @@
 # Halka test takimlari. Kullanim:
 #   bash tests/calistir.sh          -> uygulama testleri (22 takim)
 #   bash tests/calistir.sh firebase -> Firebase guvenlik kurali testleri
+#   bash tests/calistir.sh android  -> android/ projesi (XML, kaynaklar, Java derlemesi, hatirlatici)
 #
 # Gereksinim: node + playwright (chromium). Playwright genel kurulumdaysa:
 #   PLAYWRIGHT_PATH=/opt/node22/lib/node_modules/playwright bash tests/calistir.sh
 set -u
 cd "$(dirname "$0")/.."
 export PLAYWRIGHT_PATH="${PLAYWRIGHT_PATH:-/opt/node22/lib/node_modules/playwright}"
+
+if [ "${1:-}" = "android" ]; then
+  exec bash tests/android_denetim.sh
+fi
 
 if [ "${1:-}" = "firebase" ]; then
   cd tests/firebase
@@ -32,7 +37,7 @@ for t in tests/test_streak.js tests/test_round.js tests/test_xp.js \
          tests/test_kontrast.js tests/test_tasma.js tests/test_toast.js \
          tests/test_baslik.js tests/test_doldur.js \
          tests/test_minihalka.js tests/test_birakma.js tests/test_kutlama.js \
-         tests/test_uzunad.js tests/test_altgorunum.js tests/test_bosana.js tests/test_kisaekran.js tests/test_duraklat.js tests/test_metin.js tests/test_odabaslik.js tests/test_haftaozet.js tests/test_partnerozet.js tests/test_davet.js tests/test_geritusu.js; do
+         tests/test_uzunad.js tests/test_altgorunum.js tests/test_bosana.js tests/test_kisaekran.js tests/test_duraklat.js tests/test_metin.js tests/test_odabaslik.js tests/test_haftaozet.js tests/test_partnerozet.js tests/test_davet.js tests/test_geritusu.js tests/test_kopru.js; do
   printf "%-24s " "$(basename "$t")"
   out=$(node "$t" 2>&1)
   echo "$out" | grep -E 'Sonuc|Sayfa hatasi' | tr '\n' ' '

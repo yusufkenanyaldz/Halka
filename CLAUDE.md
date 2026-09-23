@@ -14,6 +14,10 @@ Her şey `index.html` içinde:
     kapatan her düğme `setAltKapat()` çağırsın; Android geri tuşu da buradan geçer.
 - `<script>`: önce Firebase/oda kodu, sonra ana uygulama
 
+`android/` — Android Studio projesi (Java, AndroidX yok). `index.html`'i WebView'da açar;
+derlemede web dosyaları deponun kökünden kopyalanır, yani `index.html` değişince Android'e
+ayrıca kopyalamak gerekmez. Kurulum rehberi `android/BENIOKU.md` (kullanıcı için, adım adım).
+
 Yanındaki dosyalar (kod değil, varlık):
 - `fonts/` — DM Sans ve Playfair Display, `@font-face` ile `index.html` başında.
 - `icons/`, `manifest.webmanifest` — telefona kurulum. Simgeler `araclar/simge_uret.js` ile üretilir.
@@ -60,9 +64,15 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (31 takım, 910 senaryo)
+bash tests/calistir.sh            # uygulama testleri (32 takım, 921 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
+bash tests/calistir.sh android    # android/: XML, kaynak bağlantıları, Java derlemesi, hatırlatıcı
 ```
+
+Bu ortamda Android SDK (`dl.google.com`) kapalı: APK derlenemez. `android` kipi Java'yı
+Robolectric'in `android-all` (Android 14 sınıfları, Maven Central) paketine karşı derler,
+sahte `R` sınıfını kaynaklardan üretir ve eksik kaynak bağlantısını yakalar. XML yorumunda
+`--` yasaktır (bir kez derlemeyi bozuyordu).
 
 Testler Playwright ile gerçek tarayıcıda çalışır. Playwright genel kurulumdaysa:
 `PLAYWRIGHT_PATH=/opt/node22/lib/node_modules/playwright bash tests/calistir.sh`
@@ -114,7 +124,12 @@ argüman eklemek yerine yeni adla yeni metot aç, JS varlığını denetlesin.
 | `requestNotificationPermission()` | Yalnız kullanıcı saat kurduğunda çağrılır. |
 | `testNotification(ad, mesaj)` | Ayrıntı ekranındaki test düğmesi. |
 | `updateWidget(json)` | Widget verisi. |
-| `getStatusBarHeight()` / `setLightStatusBar(bool)` | Durum çubuğu. |
+| `getStatusBarHeight()` / `setLightStatusBar(bool)` | Durum çubuğu (dp). |
+| `saveFile(ad, icerik)` | Yedek dosyası (`expD`). Dönüş: kaydedilen yer, `"bekle"` (kullanıcı konum seçiyor, sonucu Android `toast` ile bildirir) ya da `""` (hata). Yoksa JS `blob:` indirmeyi dener (WebView'da çalışmaz). |
+
+Uygulama (`android/`) bunların hepsini `HalkaKopru` sınıfında sunar. Köprü varken servis
+çalışanı kaydedilmez (dosyalar zaten cihazda). Widget'tan tamamlama: Android uygulamayı
+açar ve `widgetComplete(id, td())` çağırır.
 
 **Geri tuşu (Android → JS):** `onBackPressed` içinde
 `webView.evaluateJavascript("handleBack()") { v -> if (v == "false") finish() }`.

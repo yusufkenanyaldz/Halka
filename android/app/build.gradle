@@ -1,0 +1,62 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.halka.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.halka.app'
+        minSdk 26          // Android 8.0 ve ustu
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // Web dosyalari (index.html, fonts, icons) derlemede deponun kokunden kopyalanir
+    sourceSets {
+        main {
+            assets.srcDirs += ["${layout.buildDirectory.get().asFile}/halkaWeb"]
+        }
+    }
+}
+
+// Deponun koku: bu klasorun (android/) bir ustu. index.html orada olmali.
+def webKok = rootProject.file('..')
+
+def webKopyala = tasks.register('webKopyala', Copy) {
+    doFirst {
+        if (!new File(webKok, 'index.html').exists()) {
+            throw new GradleException("index.html bulunamadi: " + webKok.absolutePath +
+                    "\nAndroid Studio'da 'android' klasorunu actigindan ve bu klasorun " +
+                    "index.html ile ayni yerde durdugundan emin ol (BENIOKU.md, 2. adim).")
+        }
+    }
+    from(webKok) {
+        include 'index.html'
+        include 'fonts/**'
+        include 'icons/**'
+        include 'manifest.webmanifest'
+    }
+    into layout.buildDirectory.dir('halkaWeb/www')
+}
+
+// Varliklari okuyan her gorevden once kopyala
+tasks.named('preBuild') { dependsOn webKopyala }
+tasks.configureEach { t ->
+    if (t.name != 'webKopyala' && (t.name.contains('Assets') || t.name.startsWith('lint'))) {
+        t.dependsOn webKopyala
+    }
+}
