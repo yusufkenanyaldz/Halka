@@ -9,6 +9,9 @@ bildirim ve widget özellikleri devreye girer, yoksa sessizce atlanır.
 Her şey `index.html` içinde:
 - `<style>` bölümü: tema değişkenleri `:root` altında, açık tema `body.light` ile
 - `<body>`: ekranlar `.screen` sınıfıyla, `goScreen()` ile değiştirilir
+  - Ayarların alt görünümleri (widget, oda kur/katıl/paylaş) `#seBox` içine çizilir.
+    Yeni bir alt görünüm `setAltAc('ad')` ile başlasın, başlığı `setAltBaslik(...)` olsun,
+    kapatan her düğme `setAltKapat()` çağırsın; Android geri tuşu da buradan geçer.
 - `<script>`: önce Firebase/oda kodu, sonra ana uygulama
 
 Yanındaki dosyalar (kod değil, varlık):
@@ -54,7 +57,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (21 takım, 699 senaryo)
+bash tests/calistir.sh            # uygulama testleri (22 takım, 711 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 

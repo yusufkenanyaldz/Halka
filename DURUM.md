@@ -44,9 +44,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `4484df2` | Kutlama katmanları. Koyu temada katman %90–92 siyahtı, alttaki ekran piksellerin %2,7–3,4'ünde sızıyordu; konfeti katmanın üstünde (z 201) düşüp başlık ve düğmeyi örtüyordu. Daha ciddisi: konfeti silme zamanlayıcısı kapanış hatasıyla yalnız sonuncuyu siliyordu; her kutlamadan sonra 39 görünmez parça her şeyin üstünde kalıp dokunmaları yutuyordu. Artık katman %97 + bulanıklık, konfeti katmanın içinde yazının altında, dokunma almıyor, 3,5 sn sonra hepsi siliniyor. |
 
-| (son commit) | Uzun alışkanlık adı düzeni bozuyordu: istatistik satırında 3–4 satır (renk noktası eziliyordu), oda paylaşım listesinde 2–3 satır, halka açıklamasında "Spor" bir satırda yalnız kalıyordu; kart adı ve widget ayarlarında "…" ile kısalıyor ama tam ad hiçbir yerde okunmuyordu. Artık ad her yerde tek satır (`.ad-tek`), kısalınca tam ad `title`'da; açıklama öğesi en çok yarım genişlik. Bütün ekranları gezen test (`test_uzunad.js`). |
+| `bd23083` | Uzun alışkanlık adı düzeni bozuyordu: istatistik satırında 3–4 satır (renk noktası eziliyordu), oda paylaşım listesinde 2–3 satır, halka açıklamasında "Spor" bir satırda yalnız kalıyordu; kart adı ve widget ayarlarında "…" ile kısalıyor ama tam ad hiçbir yerde okunmuyordu. Artık ad her yerde tek satır (`.ad-tek`), kısalınca tam ad `title`'da; açıklama öğesi en çok yarım genişlik. Bütün ekranları gezen test (`test_uzunad.js`). |
+| (son commit) | Widget ayarları ekranında geri düğmesi yoktu: ayarlar listesinin içine çiziliyor, çıkmak için alt menüye basmak gerekiyordu; Android geri tuşu (`handleBack`) ayarlardan doğrudan ana ekrana atıyordu (widget, oda kur/katıl/paylaş görünümlerinde de). Ekran listenin en altından açıldığı için kaydırma konumu da kayıyordu. Artık alt görünümler `setAltAc`/`setAltKapat`/`setAltBaslik` ile açılıp kapanıyor: üstte "‹ Geri" başlığı, en üstten açılır, geri dönünce liste eski kaydırma konumunda; Android geri tuşu önce ayarlar listesine döner. Ayrıca seçilen widget boyutu hiç işaretlenmiyordu (seçici 0 öğe buluyordu). Test: `test_altgorunum.js`. |
 
-Testler: uygulama için 699 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 711 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -87,22 +88,21 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
   kendiliğinden açmaz.
 - Dışa aktarma `blob:` bağlantısıyla `a.download` kullanıyor; WebView indirmez.
   Köprüye bir "dosya kaydet" metodu gerekir (ör. `HalkaBridge.saveFile(ad, json)`).
-- Geri tuşu: `handleBack()` var ama açık katmanları (kutlama, oda penceresi, widget
-  ayarları) kapatmıyor ve ana ekrandayken "uygulamadan çık" demiyor; Android'e
+- Geri tuşu: `handleBack()` ayarların alt görünümlerini (widget, oda kur/katıl/paylaş)
+  kapatıyor ama açık katmanları (kutlama, oda penceresi) kapatmıyor ve ana ekrandayken "uygulamadan çık" demiyor; Android'e
   "tükettim / tüketmedim" dönmeli.
 - `fonts/` ve `icons/` klasörleri `index.html` ile birlikte assets'e kopyalanmalı.
   `sw.js` ve `manifest.webmanifest` WebView'da kullanılmaz, zararsız.
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
-2. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
+1. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
     büyük bir boşluk, altında ikinci bir boş durum mesajı.
-3. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+2. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
     ulaşmak için kaydırmak gerekiyor.
-4. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+3. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
-5. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
+4. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
    ("Günaydın, Yusuf", tarih, "+") ve oda başlığı (tarih, "Eş / Sevgili", "+") birlikte
    görünüyor; tarih satırı ve "+" düğmesi iki kez. (23 Eylül, doldurma çubuğu işinde görüldü.)
 
