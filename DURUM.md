@@ -36,9 +36,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `e278aee` | Ayrıntı başlığında "Geri" başlığa yapışıyordu (ölçülen boşluk 0 px; 320'de orta uzunlukta adda bile). Geri düğmesinin eksi sağ boşluğu başlığı üstüne çekiyordu, çubukta boşluk yoktu; uzun ad 3 satıra iniyor, tek kelimelik uzun ad ekrandan taşıyordu. Artık 12 px boşluk, başlık ortalı ve en çok 2 satır ("…", tam ad `title`'da), dar ekranda (≤359 px) yalnız geri oku. Geri düğmesinin dokunma alanı 34 px'ten 44 px'e çıktı. |
 
-| (son commit) | Geriye dönük doldurma çubukları listeyi boğuyordu: 8 alışkanlıkta 23 ayrı çubuk, listeye 973 px (ekranın 1,2 katı), 40 altı çizili bağlantı, 17 px dokunma hedefi; oda görünümünde ayrı kopya kod 2 günle. Artık alışkanlık başına tek özet satırı ("İşaretsiz: Dün, Pzt, Paz" + "Doldur"), açılınca her gün için 44 px düğmeler, son gün işaretlenince kayboluyor; iki görünüm aynı `ydHtml`'i kullanıyor. Liste yükü 973 → 331 px. Taşma denetimine "üst üste binme" eklendi. |
+| `7eee0d0` | Geriye dönük doldurma çubukları listeyi boğuyordu: 8 alışkanlıkta 23 ayrı çubuk, listeye 973 px (ekranın 1,2 katı), 40 altı çizili bağlantı, 17 px dokunma hedefi; oda görünümünde ayrı kopya kod 2 günle. Artık alışkanlık başına tek özet satırı ("İşaretsiz: Dün, Pzt, Paz" + "Doldur"), açılınca her gün için 44 px düğmeler, son gün işaretlenince kayboluyor; iki görünüm aynı `ydHtml`'i kullanıyor. Liste yükü 973 → 331 px. Taşma denetimine "üst üste binme" eklendi. |
 
-Testler: uygulama için 524 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Mini halkadaki sayı yüzde ama işaretsizdi ("76" yanında "16/21"; gün sayısı sanılabiliyordu), ekran okuyucuya anlamı söylenmiyordu. Artık "%76", yüzde işareti küçük ki "%100" iç daireye payla sığsın (23×13 px, iç daire 29 px); halkada `aria-label` "%76 tamamlandı" / bırakmada "%78 kaldı". Ana liste ve oda görünümü. |
+
+Testler: uygulama için 596 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -87,22 +89,24 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
-   76'yı gün sayısı sanabilir.
-2. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
+1. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
    arkasından okunuyor, konfeti başlığın üstüne biniyor.
-3. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
+2. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
    ve renk noktasını kaydırıyor; halka altındaki açıklamada kısaltılmıyor, "Spor" tek başına bir satırda kalıyor.
-4. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
-5. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
+3. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
+4. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
     büyük bir boşluk, altında ikinci bir boş durum mesajı.
-6. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+5. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
     ulaşmak için kaydırmak gerekiyor.
-7. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+6. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
-8. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
+7. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
    ("Günaydın, Yusuf", tarih, "+") ve oda başlığı (tarih, "Eş / Sevgili", "+") birlikte
    görünüyor; tarih satırı ve "+" düğmesi iki kez. (23 Eylül, doldurma çubuğu işinde görüldü.)
+8. **Bırakma türünde halka kalan yüzdeyi gösteriyor.** "Sigara %97 · 1/30": halka ve sayı
+   ilerledikçe azalıyor (geri sayım), kazanma türünde artıyor. Artık işaretli ve ekran
+   okuyucu "kaldı" diyor, ama gözle bakan kullanıcı ilerleme sanabilir. Tasarım kararı:
+   ya iki tür de ilerleme göstersin ya da bırakmada "kaldı" görünür yazılsın.
 
 ## Yayın hakkında bir not
 
