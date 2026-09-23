@@ -32,6 +32,8 @@ const EKRANLAR = [
   ['istatistik', ()=>{navTo('stats')},                                 [0,700,1400,2200]],
   ['ayarlar',    ()=>{navTo('settings')},                              [0,700,1400]],
   ['widget',     ()=>{navTo('settings');openWidgetSettings()},         [0,700]],
+  // Uygulama temasinin tersi widget temasi (koyu uygulamada acik onizleme ve tersi)
+  ['widget-tema', ()=>{S.widgetTema=document.body.classList.contains('light')?'koyu':'acik';navTo('settings');openWidgetSettings()}, [0,700]],
   ['oda-kur',    ()=>{navTo('settings');showCreateRoom()},             [0]],
   ['oda-katil',  ()=>{navTo('settings');showJoinRoom()},               [0]],
   ['oda-paylas', ()=>{S.roomId='r';S.roomCode='ABC234';S.roomType='family';navTo('settings');showShareHabits()}, [0]],

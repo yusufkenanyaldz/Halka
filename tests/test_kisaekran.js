@@ -1,6 +1,6 @@
 // Kisa ekranda ana ekran: halka ekrani kaplamasin, "Bugun" listesinin ilk karti
-// kaydirmadan gorunsun. Halka ekran yuksekligine gore kuculur (640'ta 180px, uzun
-// ekranda 270px); merkezdeki yazi halkayla kuculur ama okunur kalir:
+// kaydirmadan gorunsun. Halka ekran yuksekligine ve durum cubuguna (--sb, varsayilan 36) gore
+// kuculur (144-270px: 100vh - 460 - sb); merkezdeki yazi halkayla kuculur ama okunur kalir:
 //  - merkezdeki her gorunen yazi ic bosluga sigar (koseleri en icteki halkanin icinde)
 //  - etkin yazi boyutu (font-size x olcek) en az 11px
 //  - secili aliskanligin bilgisi (ad, x/hedef, seri) kaybolmaz: sigarsa merkezde,
@@ -57,7 +57,7 @@ const run = async (url) => {
     for(const [yuz,flip] of [['kazanma',false],['birakma',true]]){
       await p.evaluate(f=>{flipMedal(f,true);renderMain()},flip); await p.waitForTimeout(300);
       const m=await merkez(p,'#selfModeContent');
-      if(yuz==='kazanma')add(k+': halka boyutu', y>=730?270:180, m.halka);
+      if(yuz==='kazanma')add(k+': halka boyutu', Math.max(144,Math.min(270,y-460-36)), m.halka);
       add(k+' '+yuz+' genel: merkez yazisi ic bosluga sigar', 'yok', m.tasan);
       add(k+' '+yuz+' genel: merkez yazisi en az 11px', 'yok', m.kucuk);
     }
@@ -100,7 +100,7 @@ const run = async (url) => {
     const p=await ac(360,800);
     await p.setViewportSize({width:360,height:640}); await p.waitForTimeout(500);
     const m=await merkez(p,'#selfModeContent');
-    add('BOY DEGISIMI 800->640: halka kuculur', 180, m.halka);
+    add('BOY DEGISIMI 800->640: halka kuculur', 144, m.halka);
     add('BOY DEGISIMI 800->640: merkez yazisi sigar', 'yok', m.tasan);
     await p.close();
   }

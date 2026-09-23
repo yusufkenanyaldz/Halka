@@ -29,7 +29,8 @@ import java.util.Locale;
 
 /**
  * Ana ekran widget'ı. Veriyi sayfa gönderir (HalkaBridge.updateWidget, index.html pushWidgetData):
- * {date, done, total, streak, habits:[{id, name, color, pct, done, type}]}.
+ * {date, done, total, streak, tema, habits:[{id, name, color, pct, done, type}]}.
+ * tema: "koyu" | "acik" (uygulamadaki Widget Ayarları → Widget Teması).
  *
  * Widget tek bir resim olarak çizilir (başlık + en çok 4 halka). Halkaların üstünde görünmez
  * dokunma alanları var: bugün yapılmamış bir halkaya dokununca uygulama açılır ve o alışkanlık
@@ -121,13 +122,18 @@ public class HalkaWidget extends AppWidgetProvider {
         Canvas c = new Canvas(bmp);
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        // Zemin: uygulamanın koyu yüzeyi, yuvarlak köşe
-        p.setColor(Color.parseColor("#121220"));
+        boolean acik = v.acik;
+        int yazi1 = Color.parseColor(acik ? "#111111" : "#f0f0f5");      // başlık, yüzde
+        int yazi2 = Color.parseColor(acik ? "#44445a" : "#a8a8bc");      // alt satır
+        int yaziAd = Color.parseColor(acik ? "#44445a" : "#c8c8d8");     // alışkanlık adı
+
+        // Zemin: uygulamanın yüzeyi, yuvarlak köşe
+        p.setColor(Color.parseColor(acik ? "#ffffff" : "#121220"));
         RectF zemin = new RectF(0, 0, W, H);
         c.drawRoundRect(zemin, 20 * d, 20 * d, p);
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(1 * d);
-        p.setColor(Color.argb(28, 255, 255, 255));
+        p.setColor(acik ? Color.argb(22, 0, 0, 0) : Color.argb(28, 255, 255, 255));
         c.drawRoundRect(new RectF(d / 2, d / 2, W - d / 2, H - d / 2), 20 * d, 20 * d, p);
         p.setStyle(Paint.Style.FILL);
 
@@ -137,12 +143,12 @@ public class HalkaWidget extends AppWidgetProvider {
             float basY = H * 0.34f;
             t.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
             t.setTextSize(17 * d);
-            t.setColor(Color.parseColor("#f0f0f5"));
+            t.setColor(yazi1);
             c.drawText("Halka", 16 * d, basY * 0.55f + 6 * d, t);
 
             t.setTypeface(Typeface.DEFAULT);
             t.setTextSize(12 * d);
-            t.setColor(Color.parseColor("#a8a8bc"));
+            t.setColor(yazi2);
             String alt = v.toplam > 0 ? v.yapilan + "/" + v.toplam + " bugün" : "Bugün plan yok";
             if (v.seri > 0) alt += "  ·  " + v.seri + " gün seri";
             c.drawText(TextUtils.ellipsize(alt, t, W - 32 * d, TextUtils.TruncateAt.END).toString(),
@@ -153,7 +159,7 @@ public class HalkaWidget extends AppWidgetProvider {
         float satirY = H - ust;
         if (n == 0) {
             t.setTextSize(13 * d);
-            t.setColor(Color.parseColor("#a8a8bc"));
+            t.setColor(yazi2);
             String m = "Uygulamada alışkanlık ekle";
             float tw = t.measureText(m);
             c.drawText(m, (W - tw) / 2, ust + satirY / 2 + 5 * d, t);
@@ -170,6 +176,7 @@ public class HalkaWidget extends AppWidgetProvider {
         for (int i = 0; i < n; i++) {
             JSONObject h = v.aliskanlik(i);
             int renk = renk(h.optString("color", "#b8a5f0"));
+            int koyuRenk = acik ? koyulastir(renk) : renk;   // beyaz zeminde okunur ton
             int yuzde = Math.max(0, Math.min(100, h.optInt("pct", 0)));
             boolean yapildi = h.optBoolean("done", false);
             float cx = hucreG * i + hucreG / 2f;
@@ -178,7 +185,7 @@ public class HalkaWidget extends AppWidgetProvider {
             p.setStyle(Paint.Style.STROKE);
             p.setStrokeWidth(kalinlik);
             p.setStrokeCap(Paint.Cap.ROUND);
-            p.setColor(Color.argb(40, Color.red(renk), Color.green(renk), Color.blue(renk)));
+            p.setColor(Color.argb(acik ? 55 : 40, Color.red(renk), Color.green(renk), Color.blue(renk)));
             c.drawArc(kutu, 0, 360, false, p);
             if (yuzde > 0) {
                 p.setColor(renk);
@@ -188,7 +195,7 @@ public class HalkaWidget extends AppWidgetProvider {
             if (yapildi) {
                 // Bugün tamam: halkanın içinde onay işareti
                 p.setStrokeWidth(Math.max(2 * d, r * 0.16f));
-                p.setColor(renk);
+                p.setColor(koyuRenk);
                 Path onay = new Path();
                 onay.moveTo(cx - r * 0.38f, cy + r * 0.02f);
                 onay.lineTo(cx - r * 0.1f, cy + r * 0.3f);
@@ -198,7 +205,7 @@ public class HalkaWidget extends AppWidgetProvider {
                 p.setStyle(Paint.Style.FILL);
                 t.setTypeface(Typeface.DEFAULT_BOLD);
                 t.setTextSize(Math.max(9 * d, r * 0.42f));
-                t.setColor(Color.parseColor("#e8e8f0"));
+                t.setColor(yazi1);
                 String y = "%" + yuzde;
                 c.drawText(y, cx - t.measureText(y) / 2, cy + t.getTextSize() * 0.36f, t);
             }
@@ -206,12 +213,21 @@ public class HalkaWidget extends AppWidgetProvider {
 
             t.setTypeface(Typeface.DEFAULT);
             t.setTextSize(10.5f * d);
-            t.setColor(Color.parseColor("#c8c8d8"));
+            t.setColor(yaziAd);
             String ad = TextUtils.ellipsize(h.optString("name", ""), t, hucreG - 8 * d,
                     TextUtils.TruncateAt.END).toString();
             c.drawText(ad, cx - t.measureText(ad) / 2, cy + r + kalinlik / 2 + yaziY + 2 * d, t);
         }
         return bmp;
+    }
+
+    /** Pastel rengi açık zeminde okunur olacak kadar koyulaştırır. */
+    static int koyulastir(int c) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(c, hsv);
+        hsv[1] = Math.min(1f, hsv[1] * 1.3f + 0.15f);
+        hsv[2] = Math.min(hsv[2], 0.55f);
+        return Color.HSVToColor(hsv);
     }
 
     private static int renk(String s) {
@@ -225,6 +241,7 @@ public class HalkaWidget extends AppWidgetProvider {
     /** Sayfanın gönderdiği son veri. Tarih bugün değilse gün değişmiş: bugün için hiçbir şey yapılmadı. */
     static final class Veri {
         int yapilan, toplam, seri;
+        boolean acik;
         JSONArray liste = new JSONArray();
 
         int adet() {
@@ -245,6 +262,7 @@ public class HalkaWidget extends AppWidgetProvider {
                 v.yapilan = o.optInt("done", 0);
                 v.toplam = o.optInt("total", 0);
                 v.seri = o.optInt("streak", 0);
+                v.acik = "acik".equals(o.optString("tema", "koyu"));
                 JSONArray a = o.optJSONArray("habits");
                 if (a != null) v.liste = a;
                 String bugun = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());

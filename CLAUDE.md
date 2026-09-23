@@ -64,7 +64,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (32 takım, 921 senaryo)
+bash tests/calistir.sh            # uygulama testleri (34 takım, 964 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 bash tests/calistir.sh android    # android/: XML, kaynak bağlantıları, Java derlemesi, hatırlatıcı
 ```
@@ -123,7 +123,7 @@ argüman eklemek yerine yeni adla yeni metot aç, JS varlığını denetlesin.
 | `cancelReminder(id)` | Alarmı kaldır. Olmayan bir `id` için de güvenle çağrılabilmeli. |
 | `requestNotificationPermission()` | Yalnız kullanıcı saat kurduğunda çağrılır. |
 | `testNotification(ad, mesaj)` | Ayrıntı ekranındaki test düğmesi. |
-| `updateWidget(json)` | Widget verisi. |
+| `updateWidget(json)` | Widget verisi: `{date, done, total, streak, tema, habits}`; `tema` "koyu"/"acik" (`widgetTema()`, Widget Ayarları → Widget Teması; varsayılan uygulamayla aynı). |
 | `getStatusBarHeight()` / `setLightStatusBar(bool)` | Durum çubuğu (dp). |
 | `saveFile(ad, icerik)` | Yedek dosyası (`expD`). Dönüş: kaydedilen yer, `"bekle"` (kullanıcı konum seçiyor, sonucu Android `toast` ile bildirir) ya da `""` (hata). Yoksa JS `blob:` indirmeyi dener (WebView'da çalışmaz). |
 
@@ -186,11 +186,16 @@ hâlini de `EKRANLAR`'a ekle (bkz. `ana-doldur`); yoksa denetim onu hiç görmez
 - Ekran dışına kaydırarak gizlenen öğede sabit piksel kullanma (yüksekliği ve
   `--sb` değişir): `translate(..., calc(-100% - var(--sb) - pay))` ve kayma bitince
   `visibility:hidden` (bkz. `.toast`, `tests/test_toast.js`).
-- Ana ekranın halkası ekran yüksekliğine göre boyutlanır (`.medal-wrapper`, 180–270 px);
+- Ana ekranın halkası ekran yüksekliğine ve `--sb`'ye göre boyutlanır (`.medal-wrapper`,
+  `clamp(144px, 100vh - 460px - var(--sb), 270px)`);
   merkezdeki yazı 270 px'e göre yazılır ve `--hk` oranıyla küçülür (`halkaOlcek`/`hkYaz`).
   Merkeze yeni bir satır eklersen iç boşluğa sığmayacağı durumda gizle (`hk-kucuk`/`hk-dar`);
   `tests/test_kisaekran.js` sığmayı ve en az 11 px etkin boyutu ölçer. "Bugün" listesi
   halkanın hemen altındadır; araya yeni kart koyma, listenin altına ekle.
+- Android'de sayfa durum çubuğunun (ve kamera deliğinin) altına uzanır; üst boşluk `--sb`.
+  Her ekranın en üstteki öğesi `calc(var(--sb) + …)` ile başlasın, satır içi `padding-top`
+  ile ezme (ana ekran başlığı odasız kullanıcıda kameranın altına giriyordu). Tarayıcıda
+  durum çubuğu olmadığı için görünmez; `tests/test_ustbosluk.js` `--sb` 48 px'te ölçer.
 - Ölçümden önce `document.fonts.ready` beklenir; yazı tipi yüklenmeden genişlikler
   yedek yazı tipine göre çıkar ve sonuç oynar.
 
