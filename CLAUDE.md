@@ -50,7 +50,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (14 takım, 337 senaryo)
+bash tests/calistir.sh            # uygulama testleri (15 takım, 441 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -142,6 +142,9 @@ metin, satıra bölünen kısa etiket (en çok 3 kelime) ve sığmayan yer tutuc
   kapsayıcı `flex-wrap:wrap`. Parça kendi içinde bölünmez, bütün olarak alt satıra iner.
 - Kasıtlı kısaltma `text-overflow:ellipsis` ile yapılır, denetim onu saymaz.
 - Tasarım gereği çok satıra izin verilen etikete `data-satir="N"` ver (rozet adı: 2).
+- Ekran dışına kaydırarak gizlenen öğede sabit piksel kullanma (yüksekliği ve
+  `--sb` değişir): `translate(..., calc(-100% - var(--sb) - pay))` ve kayma bitince
+  `visibility:hidden` (bkz. `.toast`, `tests/test_toast.js`).
 - Ölçümden önce `document.fonts.ready` beklenir; yazı tipi yüklenmeden genişlikler
   yedek yazı tipine göre çıkar ve sonuç oynar.
 

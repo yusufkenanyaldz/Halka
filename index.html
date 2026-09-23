@@ -535,8 +535,14 @@
     .undo-fill{height:100%;background:var(--lav);border-radius:2px;transition:width linear}
     .undo-btn{background:var(--lav);color:#1a1a2e;border:none;border-radius:12px;padding:10px 20px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;flex-shrink:0}
     .undo-btn:active{transform:scale(.92)}
-    .toast{position:fixed;top:calc(var(--sb) + 8px);left:50%;transform:translateX(-50%) translateY(-90px);background:var(--bg3);border:1px solid var(--bd2);border-radius:16px;padding:14px 24px;font-size:14px;font-weight:600;z-index:350;transition:transform .35s cubic-bezier(.16,1,.3,1);box-shadow:0 8px 36px rgba(0,0,0,.5)}
-    .toast.show{transform:translateX(-50%) translateY(0)}
+    /* Gizliyken: kendi yuksekligi + durum cubugu payi + ust bosluk ve golge payi
+       kadar yukari (eskiden sabit -90px'ti; iki satirlik mesajda ya da --sb buyukken
+       govdesi ve golgesi ekranin tepesinde kaliyordu). Kayma bitince visibility:hidden,
+       hesap tutmasa da gorunmez ve dokunmayi yakalamaz.
+       Genislik: left:50% tek basina en fazla ekranin yarisini veriyordu, mesaj 2-3
+       satira bolunuyordu; artik ekran eksi 32px'e kadar. */
+    .toast{position:fixed;top:calc(var(--sb) + 8px);left:50%;width:max-content;max-width:calc(100vw - 32px);text-align:center;transform:translate(-50%,calc(-100% - var(--sb) - 60px));visibility:hidden;background:var(--bg3);border:1px solid var(--bd2);border-radius:16px;padding:14px 20px;font-size:14px;font-weight:600;z-index:350;transition:transform .35s cubic-bezier(.16,1,.3,1),visibility 0s linear .35s;box-shadow:0 8px 36px rgba(0,0,0,.5)}
+    .toast.show{transform:translate(-50%,0);visibility:visible;transition:transform .35s cubic-bezier(.16,1,.3,1),visibility 0s}
 
     /* Card stagger */
     .stg{animation:stagger .4s cubic-bezier(.16,1,.3,1) backwards}
