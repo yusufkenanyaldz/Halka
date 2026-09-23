@@ -49,9 +49,10 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 | `0cb15ae` | Boş ana ekran: bireysel alışkanlık yokken (hiç yok, hepsi arşivde ya da hepsi odada) 270 px'lik boş halka ve ortasında "Kazanılacak alışkanlık yok" çiziliyor, altında ikinci boş mesaj duruyordu; 320×640'ta "Alışkanlık Ekle" düğmesi alt menünün altında kalıyor, ekran 101 px kaydırılıyordu. Artık halka bölümü (`#rHero`) gizlenir, tek boş durum mesajı üstte ve düğme kaydırmadan görünür. Test: `test_bosana.js`. |
 | `07c9782` | Kısa ekranda halka ekranı kaplıyordu: halka her ekranda sabit 270 px; başlık, halka, seri ve haftalık hedef kartlarından sonra gelen "Bugün" listesinin ilk kartı 320×640, 360×640 ve hatta 360×800'de kaydırmadan hiç görünmüyordu. Kullanıcının seçimiyle (B): halka ekran yüksekliğine göre küçülür (640'ta 180 px, 730 px ve üstünde 270 px) ve "Bugün" listesi halkanın hemen altına alındı (seri ve haftalık hedef listenin altında). Merkezdeki yazı halkayla aynı oranda küçülür (`--hk`, `halkaOlcek`); iç boşluk yazıyı taşıyamazsa merkezde yalnız yüzde kalır, seçili alışkanlığın bilgisi halkanın altına tek satır iner (`#rAlt`). Bu, uzun ekranda da eskiden beri olan bir taşmayı giderdi: 2+ halkada seçili bilgisi halkaların üstüne 10–28 px taşıyordu. Test: `test_kisaekran.js`; ortak ekran turuna `ana-secili` eklendi. |
 | `9942f31` | Günlük sayım duraklatılmış ve bugün programında olmayan alışkanlığı da sayıyordu: bir alışkanlık duraklatılınca (ya da hafta sonu hafta içi alışkanlığı varken) etkin olanların hepsi yapılsa bile "1/2 tamamlandı" yazıyor, "Bugünü tamamladın" afişi ve "hepsi bitti" motivasyonu hiç çıkmıyordu; widget ve partnere giden özet de aynı yanlış sayıyı taşıyordu, duraklatılmış bir ortak alışkanlık oda konfetisini engelliyordu. Yalnız duraklatılmış alışkanlık varken "Seri başlatmadın, Bugün ilk adımı at!" ve "harekete geç" yazıyordu; widget'tan dokunulunca duraklatılmış alışkanlık ilerliyordu. Artık hepsi `bugunGerekli(h)` (duraklatılmamış ve bugün programında) ile sayar; hiç gerekli yoksa "Tüm alışkanlıklar duraklatıldı" / "Bugün programında alışkanlık yok". Test: `test_duraklat.js`. |
-| (son commit) | Metin tutarlılığı: ayarlarda İngilizce "Onboarding Tekrarla" (ve onay penceresinde "Onboarding") → "Tanıtımı Tekrar Göster". İstatistikteki "En uzun seri" şu anki serinin en büyüğünü gösteriyordu: dün kırılan 10 günlük seri "—", geçmiş turdaki 22 günlük seri "2 gün" görünüyordu; seri rozetleri (7/21/30 gün) de aynı değeri okuduğu için seri kırılınca geri alınıyordu. Artık `enUzunSeri(h)` ömür boyu rekoru hesaplar (cS ile aynı kural, geçmiş turlar dahil). Test: `test_metin.js`. |
+| `1482189` | Metin tutarlılığı: ayarlarda İngilizce "Onboarding Tekrarla" (ve onay penceresinde "Onboarding") → "Tanıtımı Tekrar Göster". İstatistikteki "En uzun seri" şu anki serinin en büyüğünü gösteriyordu: dün kırılan 10 günlük seri "—", geçmiş turdaki 22 günlük seri "2 gün" görünüyordu; seri rozetleri (7/21/30 gün) de aynı değeri okuduğu için seri kırılınca geri alınıyordu. Artık `enUzunSeri(h)` ömür boyu rekoru hesaplar (cS ile aynı kural, geçmiş turlar dahil). Test: `test_metin.js`. |
+| (son commit) | Oda sekmesinde iki başlık alt alta: bireysel başlık (tarih, "Günaydın", bireysel "+", "0/4 alışkanlık tamamlandı", seviye, motivasyon) `#selfModeContent` dışında kaldığı için oda başlığının üstünde de çiziliyordu; tarih ve "+" iki kez. Bireysel başlık bireysel içeriğe alındı; oda sekmesinde yalnız oda başlığı, bireysel başlığın yerinde. Test: `test_odabaslik.js`. |
 
-Testler: uygulama için 849 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+Testler: uygulama için 864 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -100,9 +101,7 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **Oda görünümünde iki başlık alt alta.** "Eş / Sevgili" sekmesinde bireysel başlık
-   ("Günaydın, Yusuf", tarih, "+") ve oda başlığı (tarih, "Eş / Sevgili", "+") birlikte
-   görünüyor; tarih satırı ve "+" düğmesi iki kez. (23 Eylül, doldurma çubuğu işinde görüldü.)
+Listedeki bütün maddeler giderildi (bkz. yukarıdaki tablo).
 
 ## Yayın hakkında bir not
 
