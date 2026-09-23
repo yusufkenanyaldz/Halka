@@ -382,10 +382,14 @@
     .hc-info{flex:1;min-width:0;cursor:pointer}
     .hc-info:active{opacity:.7}
     .hc-nm{font-size:15px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .hc-mt{font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:10px}
+    .hc-mt{font-size:12px;color:var(--tx2);display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;row-gap:2px}
+    .hc-mt>*{white-space:nowrap}
     .hc-mt .i{width:14px;height:14px}
-    .hc-btns{display:flex;gap:8px;margin-top:12px;padding-left:58px}
-    .hc-btn-main{flex:1;min-width:0;text-align:center}
+    .hc-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding-left:58px}
+    /* min-width:auto: dugme yazisindan dar olamaz (0 iken 320px'te "Tamamland" kirpiliyordu);
+       yer yetmezse ikinci dugme alt satira iner, yazi kesilmez */
+    .hc-btn-main{flex:1;min-width:auto;text-align:center}
+    @media (max-width:359px){.hc-btns{padding-left:0}}
     .ab{padding:12px 14px;border-radius:14px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;text-align:center;white-space:nowrap;min-height:44px;display:flex;align-items:center;justify-content:center}
     .ab:active{transform:scale(.9)}
     .ab-g{background:var(--mint2);color:var(--mint);border:1px solid rgba(142,228,200,.12)}
@@ -395,7 +399,9 @@
     .ab-done-tap:active{transform:scale(.9);opacity:.6}
     .ab-done-tap .chk{animation:chkPop .5s cubic-bezier(.16,1,.3,1)}
     /* Yesterday */
-    .yd-bar{margin:-6px 16px 10px;padding:12px 16px;border-radius:0 0 18px 18px;background:var(--honey2);border:1px solid rgba(240,216,142,.08);border-top:none;font-size:13px;color:var(--honey);display:flex;align-items:center;gap:8px;font-weight:500}
+    .yd-bar{margin:-6px 16px 10px;padding:12px 16px;border-radius:0 0 18px 18px;background:var(--honey2);border:1px solid rgba(240,216,142,.08);border-top:none;font-size:13px;color:var(--honey);display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-weight:500}
+    /* Etiket ve eylem grubu kendi icinde bolunmez; sigmazsa eylemler birlikte alt satira iner */
+    .yd-lbl,.yd-eyl{white-space:nowrap}
     .yd-lk{text-decoration:underline;cursor:pointer;font-weight:700}
 
     .empty{text-align:center;padding:64px 32px 48px}
@@ -454,7 +460,8 @@
     .bc{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--sf2);border:2px solid var(--bd)}
     .bc.got{background:linear-gradient(135deg,var(--honey),#e8a840);border-color:var(--honey);box-shadow:0 4px 18px var(--honeyg)}
     .bc .i{width:22px;height:22px}.bc.got .i{color:#1a1a2e !important}.bc:not(.got) .i{color:var(--tx3) !important;opacity:.4}
-    .bl{font-size:10px;color:var(--tx3);text-align:center;line-height:1.2;font-weight:600}
+    /* Rozet adi ikon izgarasinda en cok 2 satir (data-satir="2"), satirlar dengeli */
+    .bl{font-size:10px;color:var(--tx3);text-align:center;line-height:1.2;font-weight:600;text-wrap:balance}
     .pbw{height:6px;background:var(--sf2);border-radius:3px;overflow:hidden;margin:6px 0}
     .pbf{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.16,1,.3,1)}
 
@@ -715,8 +722,8 @@
     <div style="padding:20px;border-radius:18px;background:var(--sf);border:2px solid var(--bd2)">
       <div style="font-size:14px;color:var(--tx2);margin-bottom:16px;text-align:center">Oda türünü seç</div>
       <div style="display:flex;gap:8px;margin-bottom:16px">
-        <button class="btn btn-p" style="flex:1;padding:14px" onclick="ob3DoCreate('couple')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>
-        <button class="btn btn-s" style="flex:1;padding:14px" onclick="ob3DoCreate('family')"><span style="display:block;font-size:14px">Aile / Dost</span><span style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>
+        <button class="btn btn-p" style="flex:1;padding:14px;flex-direction:column;gap:2px" onclick="ob3DoCreate('couple')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>
+        <button class="btn btn-s" style="flex:1;padding:14px;flex-direction:column;gap:2px" onclick="ob3DoCreate('family')"><span style="display:block;font-size:14px">Aile / Dost</span><span style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>
       </div>
       <div id="ob3CodeArea" style="display:none;text-align:center;padding:16px 0">
         <div style="font-size:12px;color:var(--tx3);margin-bottom:8px">Oda kodun:</div>
@@ -1200,8 +1207,8 @@
     html+='<div class="sc" style="padding:16px">';
     html+='<div style="font-size:14px;color:var(--tx2);margin-bottom:16px;line-height:1.5">Bir oda oluştur ve kodunu paylaş. Sevgilin, eşin veya arkadaşların bu kodla katılabilir.</div>';
     html+='<div style="display:flex;gap:8px">';
-    html+='<button class="btn btn-p" style="flex:1;padding:14px" onclick="createRoom(\'couple\')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>';
-    html+='<button class="btn btn-s" style="flex:1;padding:14px" onclick="createRoom(\'family\')"><span style="display:block;font-size:14px">Aile / Dost</span><span style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>';
+    html+='<button class="btn btn-p" style="flex:1;padding:14px;flex-direction:column;gap:2px" onclick="createRoom(\'couple\')"><span style="display:block;font-size:14px">Sevgili / Eş</span><span style="display:block;font-size:11px;margin-top:2px">2 kişi</span></button>';
+    html+='<button class="btn btn-s" style="flex:1;padding:14px;flex-direction:column;gap:2px" onclick="createRoom(\'family\')"><span style="display:block;font-size:14px">Aile / Dost</span><span style="display:block;font-size:11px;margin-top:2px">3-6 kişi</span></button>';
     html+='</div>';
     html+='<button class="ed-apply" style="width:100%;margin-top:12px;background:var(--sf2);color:var(--tx2)" onclick="renderSet()">İptal</button>';
     html+='</div>';
@@ -1494,7 +1501,7 @@
           html+='<div class="hc-top">';
           html+='<div class="hc-rg" onclick="openDet(\''+h.id+'\')"><svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="19" fill="none" stroke="var(--sf2)" stroke-width="5"/></svg><div class="hc-rg-p" style="font-size:14px;color:var(--tx3)"><svg viewBox="0 0 18 18" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="4" width="3" height="10" rx="1"/><rect x="10" y="4" width="3" height="10" rx="1"/></svg></div></div>';
           html+='<div class="hc-info" onclick="openDet(\''+h.id+'\')"><div class="hc-nm">'+esc(h.name)+'</div>';
-          html+='<div class="hc-mt"><span style="color:var(--honey)">'+pausedSince+' gündür duraklatılmış</span></div></div>';
+          html+='<div class="hc-mt" style="color:var(--honey)"><span>Duraklatıldı</span><span>'+pausedSince+' gün</span></div></div>';
           html+='<div class="ab-done-tap" onclick="resumeH(\''+h.id+'\')" style="color:var(--mint);border-color:rgba(142,228,200,.2)"><span class="i i-s">'+IC.bolt+'</span>Devam</div>';
           html+='</div></div></div>';
           return;
@@ -1543,7 +1550,7 @@
             var pdLabel=pd===1?'Dün':'2 gün önce';
             var pdDone=h.type==='quit'?'Temiz kaldım':'Yaptım';
             var pdMiss=h.type==='quit'?'Düştüm':'Yapmadım';
-            html+='<div class="yd-bar"><span class="i i-s">'+IC.bolt+'</span> <span class="yd-lbl">'+pdLabel+'</span> — <span class="yd-lk" onclick="bfY(\''+h.id+'\',\'done\',\''+pdStr+'\')">'+pdDone+'</span> / <span class="yd-lk" onclick="bfY(\''+h.id+'\',\'missed\',\''+pdStr+'\')">'+pdMiss+'</span></div>';
+            html+='<div class="yd-bar"><span class="i i-s">'+IC.bolt+'</span> <span class="yd-lbl">'+pdLabel+'</span> <span class="yd-eyl">— <span class="yd-lk" onclick="bfY(\''+h.id+'\',\'done\',\''+pdStr+'\')">'+pdDone+'</span> / <span class="yd-lk" onclick="bfY(\''+h.id+'\',\'missed\',\''+pdStr+'\')">'+pdMiss+'</span></span></div>';
           }
         }
       });
@@ -2923,7 +2930,7 @@
           html+='<div class="hc-top">';
           html+='<div class="hc-rg" onclick="openDet(\''+h.id+'\')"><svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="19" fill="none" stroke="var(--sf2)" stroke-width="5"/></svg><div class="hc-rg-p" style="font-size:14px;color:var(--tx3)"><svg viewBox="0 0 18 18" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="5" y="4" width="3" height="10" rx="1"/><rect x="10" y="4" width="3" height="10" rx="1"/></svg></div></div>';
           html+='<div class="hc-info" onclick="openDet(\''+h.id+'\')"><div class="hc-nm">'+esc(h.name)+'</div>';
-          html+='<div class="hc-mt"><span style="color:var(--honey)">'+pausedSince+' gündür duraklatılmış</span></div></div>';
+          html+='<div class="hc-mt" style="color:var(--honey)"><span>Duraklatıldı</span><span>'+pausedSince+' gün</span></div></div>';
           html+='<div class="ab-done-tap" onclick="resumeH(\''+h.id+'\')" style="color:var(--mint);border-color:rgba(142,228,200,.2)"><span class="i i-s">'+IC.bolt+'</span>Devam</div>';
           html+='</div></div></div>';
           return;
@@ -2983,7 +2990,7 @@
             var pdLabel=pd===1?'Dün':pd===2?'2 gün önce':'3 gün önce';
             var pdDoneLabel=h.type==='quit'?'Temiz kaldım':'Yaptım';
             var pdMissLabel=h.type==='quit'?'Düştüm':'Yapmadım';
-            pastBars+='<div class="yd-bar" style="'+(pd>1?'border-radius:0;margin-top:-1px':'')+'"><span class="i i-s">'+IC.bolt+'</span> <span class="yd-lbl">'+pdLabel+'</span> — <span class="yd-lk" onclick="event.stopPropagation();event.preventDefault();bfY(\''+h.id+'\',\'done\',\''+pdStr+'\')">'+pdDoneLabel+'</span> / <span class="yd-lk" onclick="event.stopPropagation();event.preventDefault();bfY(\''+h.id+'\',\'missed\',\''+pdStr+'\')">'+pdMissLabel+'</span></div>';
+            pastBars+='<div class="yd-bar" style="'+(pd>1?'border-radius:0;margin-top:-1px':'')+'"><span class="i i-s">'+IC.bolt+'</span> <span class="yd-lbl">'+pdLabel+'</span> <span class="yd-eyl">— <span class="yd-lk" onclick="event.stopPropagation();event.preventDefault();bfY(\''+h.id+'\',\'done\',\''+pdStr+'\')">'+pdDoneLabel+'</span> / <span class="yd-lk" onclick="event.stopPropagation();event.preventDefault();bfY(\''+h.id+'\',\'missed\',\''+pdStr+'\')">'+pdMissLabel+'</span></span></div>';
           }
         }
         if(pastBars)html+=pastBars;
@@ -3271,7 +3278,7 @@
       html+='<div style="margin-top:16px"><div class="sec-t">Bugünün Notu</div></div>';
       html+='<div class="sc" style="padding:12px 14px">';
       html+='<div style="display:flex;gap:8px;align-items:flex-start">';
-      html+='<textarea class="motiv-note-edit" id="dayNoteInp" rows="2" maxlength="200" placeholder="Bugün nasıl hissediyorsun? (opsiyonel)" style="min-height:44px;flex:1">'+esc(todayNote)+'</textarea>';
+      html+='<textarea class="motiv-note-edit" id="dayNoteInp" rows="2" maxlength="200" placeholder="Bugün nasıl hissediyorsun?" style="min-height:44px;flex:1">'+esc(todayNote)+'</textarea>';
       html+='<button class="ed-apply" style="flex-shrink:0;align-self:flex-end" onclick="saveDayNote(\''+h.id+'\')">Kaydet</button>';
       html+='</div>';
       var noteKeys=h.notes?Object.keys(h.notes).sort().reverse().filter(function(k){return k!==td()&&h.notes[k]}).slice(0,3):[];
@@ -3617,7 +3624,7 @@
         {ic:'<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 2l1.5 3 3.5.5-2.5 2.5.5 3.5L9 10 6 11.5l.5-3.5L4 5.5 7.5 5z"/><path d="M4 14l2-2M14 14l-2-2"/></svg>',l:'500 Gün',e:totalDoneDays>=500}
       ];
       html+='<div class="sc"><div class="stt">Rozetler</div><div class="badge-r">';
-      badgeDefs.forEach(function(bg){html+='<div class="bi"><div class="bc'+(bg.e?' got':'')+'"><span class="i">'+bg.ic+'</span></div><div class="bl">'+bg.l+'</div></div>'});
+      badgeDefs.forEach(function(bg){html+='<div class="bi"><div class="bc'+(bg.e?' got':'')+'"><span class="i">'+bg.ic+'</span></div><div class="bl" data-satir="2">'+bg.l+'</div></div>'});
       html+='</div></div>';
       html+='<div style="margin-top:20px"><div class="sec-t">Detaylar</div></div>';
       hs.forEach(function(h){

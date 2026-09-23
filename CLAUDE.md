@@ -50,7 +50,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (13 takım, 283 senaryo)
+bash tests/calistir.sh            # uygulama testleri (14 takım, 337 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -131,6 +131,19 @@ gerekiyorsa sınıf ver ve `body.light`'ta kaldır (bkz. `.hc-paused`, `.yd-lbl`
 `tests/test_kontrast.js` her ekranın metin kontrastını WCAG AA'ya göre ölçer
 (`--ayrinti` ile hangi metin, hangi renk). İki tema da her ekranda 0 kusur ister.
 Açık gri kutu (`--sf2`/`--sf3`) üzerinde `--tx3` sınırda kalır; orada `--tx2` kullan.
+
+## Dar ekran
+
+`tests/test_tasma.js` 15 ekranı 320, 360 ve 412 piksel genişlikte gezer; kırpılan
+metin, satıra bölünen kısa etiket (en çok 3 kelime) ve sığmayan yer tutucu arar.
+- Esnek kutudaki düğmeye `min-width:0` verme: yazısından dar olup `overflow:hidden`
+  ile kırpılır. Yer yetmezse satır kırılsın (`flex-wrap:wrap`), yazı kesilmesin.
+- Birden çok parçalı kısa bilgi ("4 gün seri", "16/21"): her parça `white-space:nowrap`,
+  kapsayıcı `flex-wrap:wrap`. Parça kendi içinde bölünmez, bütün olarak alt satıra iner.
+- Kasıtlı kısaltma `text-overflow:ellipsis` ile yapılır, denetim onu saymaz.
+- Tasarım gereği çok satıra izin verilen etikete `data-satir="N"` ver (rozet adı: 2).
+- Ölçümden önce `document.fonts.ready` beklenir; yazı tipi yüklenmeden genişlikler
+  yedek yazı tipine göre çıkar ve sonuç oynar.
 
 ## Yazım
 

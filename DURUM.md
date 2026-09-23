@@ -28,9 +28,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `55fb908` | Açık tema okunmuyordu. Vurgu değişkenleri açık temada yeniden tanımlanmıyordu (kontrast 1,3–2,2), 115 ayrı yamanın bir kısmı eski griyi sabitliyordu, soldurmalar (`opacity`) metni eşiğin altına itiyordu. Artık açık temada 15 ekranın hepsinde WCAG AA'nın altında metin yok (önce 239). Ayrıca iki temada da: haftalık grafikte gün etiketi soldurulmuyor, widget önizlemesi okunuyor. |
 
-| (son commit) | Koyu tema kontrastı. 218 metin WCAG AA'nın altındaydı; 175'i üçüncül metin rengi `--tx3` (#5c5a72, 2,88). `--tx3` #8886a2 oldu (5,45; `--tx2`'nin altında, hiyerarşi korunuyor). Takvim iki temada ortak kurala bağlandı: yapılan günde koyu rakam, yapılmayan günde tam görünür mercan, jokerli günde açık rakam. Artık iki temada da 15 ekranın hepsinde 0 kusur. |
+| `3cf1ae8` | Koyu tema kontrastı. 218 metin WCAG AA'nın altındaydı; 175'i üçüncül metin rengi `--tx3` (#5c5a72, 2,88). `--tx3` #8886a2 oldu (5,45; `--tx2`'nin altında, hiyerarşi korunuyor). Takvim iki temada ortak kurala bağlandı: yapılan günde koyu rakam, yapılmayan günde tam görünür mercan, jokerli günde açık rakam. Artık iki temada da 15 ekranın hepsinde 0 kusur. |
 
-Testler: uygulama için 283 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Dar ekranda kesilen/bölünen metin. 320 pikselde "Tamamlandı" kırpılıyordu (kutu 74 px, metin 90 px): düğme `min-width:0` ile yazısından dar olabiliyordu. "5 gün seri" üç satıra, "2 gün önce" iki satıra bölünüyordu; oda düğmelerinde ad ve kişi sayısı yan yana sıkışıyordu (360'ta da); not kutusunun yer tutucusu sığmıyordu. Artık 320/360/412'de 15 ekranın hepsinde kırpılan ya da bölünen kısa metin yok. |
+
+Testler: uygulama için 337 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -79,31 +81,27 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
 
-1. **320 pikselde düğme yazısı kesiliyor:** "Tamamland" (ı düşüyor). Aynı genişlikte
-   "4 gün seri" alt alta üç satıra bölünüyor, not kutusunun yer tutucusu kesiliyor.
-2. **Gizli bildirim balonu ekranın tepesinde görünüyor.** Balon gizlenirken sabit
+1. **Gizli bildirim balonu ekranın tepesinde görünüyor.** Balon gizlenirken sabit
    `-90px` kaydırılıyor, yüksekliği metne göre değişiyor; iki satırlık mesajda alt kenarı
    tarih satırının üstünde kalıyor. Android'de `--sb` köprüden büyük gelirse tek satırda da görünür.
    Görünürken de karşılama başlığının üstüne biniyor.
-3. **Detay başlığında "Geri" başlığa yapışıyor.** Uzun adda başlık 3 satıra çıkıyor,
+2. **Detay başlığında "Geri" başlığa yapışıyor.** Uzun adda başlık 3 satıra çıkıyor,
    "‹ Geri" ile ilk kelime arasında boşluk yok ("Gerimeditasyon").
-4. **Geriye dönük doldurma çubukları listeyi boğuyor.** İşaretlenmemiş her alışkanlık
+3. **Geriye dönük doldurma çubukları listeyi boğuyor.** İşaretlenmemiş her alışkanlık
    için 3 ayrı çubuk ("Dün / 2 gün önce / 3 gün önce — Yaptım / Yapmadım"); 8 alışkanlıkta
    ana liste çubuklarla doluyor. Altı çizili sarı bağlantı görünümü uygulama gibi değil, web sayfası gibi.
-5. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
+4. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
    76'yı gün sayısı sanabilir.
-6. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
+5. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
    arkasından okunuyor, konfeti başlığın üstüne biniyor.
-7. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
+6. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
    ve renk noktasını kaydırıyor; halka altındaki açıklamada kısaltılmıyor, "Spor" tek başına bir satırda kalıyor.
-8. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
-9. **Oda oluştur'da "Aile / Dost 3–6 kişi" düğmesi iki sütuna bölünüyor**, yanındaki
-    "Sevgili / Eş 2 kişi" ile hizası tutmuyor.
-10. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
+7. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
+8. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
     büyük bir boşluk, altında ikinci bir boş durum mesajı.
-11. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+9. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
     ulaşmak için kaydırmak gerekiyor.
-12. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+10. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
     "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
 
 ## Yayın hakkında bir not
