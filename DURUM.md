@@ -38,20 +38,78 @@ Yani her şey kapalı, oda özelliği beş aydır çalışmıyor. Gizlilik riski
 
 ## Kalanlar
 
-Öncelik sırasına yakın:
+Hedef platform **Android (WebView)**. Tarayıcıya özgü işler (tarayıcı bildirimleri,
+servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağıdakilerin hepsi
+ölçüldü ya da kodda satırıyla doğrulandı.
 
-1. **Bildirimler tarayıcıda çalışmıyor.** Dakikada bir tam saat eşleşmesi aranıyor,
-   arka planda zamanlayıcı kısılınca o dakika kaçıyor. Ayrıca planlı günleri yok sayıyor.
-   Android köprüsü varsa sorun yok.
-2. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
+### A. Teknik hatalar (Android'de de geçerli)
+
+1. **Hatırlatıcılar yanlış alışkanlıklara ve yanlış günlere kuruluyor.** Açılışta
+   (`init`, `if(h.reminder)scheduleNotif(h)`) arşivli ve duraklatılmış alışkanlıkların
+   hatırlatıcısı da yeniden kuruluyor; sahte köprüyle ölçüldü: 3 alışkanlıktan 3'ü için
+   `scheduleReminder` çağrıldı, olması gereken 1. `archiveH` hatırlatıcıyı iptal ediyor
+   ama `h.reminder`'ı silmiyor, `pauseH` hiç iptal etmiyor. `scheduleReminder`'a
+   program (hafta içi / özel günler) gönderilmiyor; Android her gün bildirim atar.
+   Her alışkanlık için açılışta ayrıca izin isteniyor.
+2. **Tur kapanınca bugünün kaydı kayboluyor.** `closeC()` bugünü de `h.history`'ye
+   taşıyıp `h.days`'i boşaltıyor. Ölçüldü: 7 günlük hedef bugün tamamlanıp tur
+   kapatılınca kartta yine "Tamamlandı / Yapamadım" çıkıyor, üstte "0/1 alışkanlık
+   tamamlandı" yazıyor (`dayState` "done" diyor). Aynı `h.days[td()]` okuması widget'a
+   (`pushWidgetData`), partner özetine (`fbSyncShared`) ve hatırlatıcı kontrolüne de gidiyor.
+3. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
    hafta sonu da paydaya giriyor, oran olduğundan düşük çıkıyor.
-3. **320 piksel ekranda halka yer kaplıyor.** SVG sabit 270 piksel, küçültülmüyor.
-   Günün listesine ulaşmak için boş bir halkayı geçip kaydırmak gerekiyor.
-4. **Küçük tutarsızlıklar.** Sabit metinde "0 / 5 seçildi" yazıyor ama sınır 8.
-   Bildirim balonu karşılama yazısının üstüne biniyor. Reddedilen davetler için yerel
-   depoya sürekli anahtar yazılıyor, hiç temizlenmiyor. Partner özetindeki toplam
-   paylaşılanları değil bütün alışkanlıkları sayıyor. İstatistiklerdeki "En uzun seri"
-   aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
+4. **Partner özetindeki toplam** paylaşılanları değil bütün alışkanlıkları sayıyor
+   (`fbSyncShared`, `total:act.length`, `done` da öyle).
+5. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
+
+### B. Android tarafında yapılması gerekenler (JS hatası değil, WebView ayarı)
+
+- `setDomStorageEnabled(true)` — yoksa `localStorage` yok, veri kaydedilmez.
+- `WebChromeClient` atanmalı — atanmazsa `confirm()` hep `false` döner: silme,
+  arşivleme, "Tüm Verileri Sil", yedek yükleme hiç çalışmaz. 11 yerde `confirm/alert` var.
+- `onShowFileChooser` — "Yedekten Geri Yükle" `<input type=file>` açıyor; WebView bunu
+  kendiliğinden açmaz.
+- Dışa aktarma `blob:` bağlantısıyla `a.download` kullanıyor; WebView indirmez.
+  Köprüye bir "dosya kaydet" metodu gerekir (ör. `HalkaBridge.saveFile(ad, json)`).
+- Geri tuşu: `handleBack()` var ama açık katmanları (kutlama, oda penceresi, widget
+  ayarları) kapatmıyor ve ana ekrandayken "uygulamadan çık" demiyor; Android'e
+  "tükettim / tüketmedim" dönmeli.
+- `fonts/` ve `icons/` klasörleri `index.html` ile birlikte assets'e kopyalanmalı.
+  `sw.js` ve `manifest.webmanifest` WebView'da kullanılmaz, zararsız.
+
+### C. Arayüz kusurları (360×800 ve 320×640, koyu ve açık tema, dolu veriyle çekildi)
+
+1. **Açık tema okunmuyor.** Açık tema yalnız zemin ve metin rengini değiştiriyor,
+   vurgu renkleri koyu temanın pastelleri kalıyor. Açık zeminde kontrast: nane 1,37,
+   bal 1,29, gök 1,69, mercan 2,00, lavanta 1,99 (okunabilir metin için en az 4,5).
+   Görünmeyenler: "Filiz" seviye rozeti, "kazanılıyor/bırakılıyor", "2 gündür
+   duraklatılmış", "Duraklat" düğmesi, detaydaki "%67", seçili hedef günü, "Sağlıklı ✓".
+2. **320 pikselde düğme yazısı kesiliyor:** "Tamamland" (ı düşüyor). Aynı genişlikte
+   "4 gün seri" alt alta üç satıra bölünüyor, not kutusunun yer tutucusu kesiliyor.
+3. **Gizli bildirim balonu ekranın tepesinde görünüyor.** Balon gizlenirken sabit
+   `-90px` kaydırılıyor, yüksekliği metne göre değişiyor; iki satırlık mesajda alt kenarı
+   tarih satırının üstünde kalıyor. Android'de `--sb` köprüden büyük gelirse tek satırda da görünür.
+   Görünürken de karşılama başlığının üstüne biniyor.
+4. **Detay başlığında "Geri" başlığa yapışıyor.** Uzun adda başlık 3 satıra çıkıyor,
+   "‹ Geri" ile ilk kelime arasında boşluk yok ("Gerimeditasyon").
+5. **Geriye dönük doldurma çubukları listeyi boğuyor.** İşaretlenmemiş her alışkanlık
+   için 3 ayrı çubuk ("Dün / 2 gün önce / 3 gün önce — Yaptım / Yapmadım"); 8 alışkanlıkta
+   ana liste çubuklarla doluyor. Altı çizili sarı bağlantı görünümü uygulama gibi değil, web sayfası gibi.
+6. **Mini halkadaki sayı yüzde ama işareti yok.** "76" yanında "16/21" yazıyor; kullanıcı
+   76'yı gün sayısı sanabilir.
+7. **Kutlama ve kilometre taşı katmanları yarı saydam.** Alttaki "%5" ve halka yıldızın
+   arkasından okunuyor, konfeti başlığın üstüne biniyor.
+8. **Uzun adlar taşıyor.** İstatistik detayında ad 3 satıra çıkıp "kazanılıyor" etiketini
+   ve renk noktasını kaydırıyor; halka altındaki açıklamada kısaltılmıyor, "Spor" tek başına bir satırda kalıyor.
+9. **Widget ayarları ekranında geri düğmesi yok.** Çıkmak için alt menüye basmak gerekiyor.
+10. **Oda oluştur'da "Aile / Dost 3–6 kişi" düğmesi iki sütuna bölünüyor**, yanındaki
+    "Sevgili / Eş 2 kişi" ile hizası tutmuyor.
+11. **Boş ana ekran:** halkanın yerinde küçük "Kazanılacak alışkanlık yok" yazısı ve
+    büyük bir boşluk, altında ikinci bir boş durum mesajı.
+12. **320 pikselde halka ekranı kaplıyor.** SVG sabit 270 piksel; günün listesine
+    ulaşmak için kaydırmak gerekiyor.
+13. **Metin tutarlılığı:** "Onboarding Tekrarla" İngilizce; istatistiklerdeki
+    "En uzun seri" aslında şu anki en iyi seriyi gösteriyor, rekoru değil.
 
 ## Yayın hakkında bir not
 
