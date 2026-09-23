@@ -22,9 +22,11 @@ Bu dosya bir oturum devri içindir. İş ilerledikçe güncellensin ya da silins
 
 | `77349d3` | Çevrimdışı ve kurulum. Yazı tipleri Google yerine `fonts/`'tan geliyor (Türkçe harfler dahil). `manifest.webmanifest` ve simgeler eklendi, Chrome manifesti hatasız okuyor. `sw.js` uygulamayı önbelleğe alıyor: sunucu kapalıyken açılıyor, şebeke cevap vermezse 4 saniyede önbellekten açılıyor, çevrimiçiyken yeni sürüm hemen geliyor. |
 
-| (son commit) | Hatırlatıcılar. Arşivli ve duraklatılmış alışkanlıkların alarmı her açılışta yeniden kuruluyordu; artık açılışta iptal ediliyor. Duraklat/devam, arşivden çıkar, ad/tür/program değişikliği alarmı eşitliyor. Program Android'e yeni `scheduleReminderDays` ile ISO gün listesi olarak gidiyor (eski köprüde 4 argümanlı metoda düşülüyor). Açılışta izin istenmiyor. "Üzerine yaz" yedek yüklemede eski alarmlar iptal ediliyor. |
+| `886d85b` | Hatırlatıcılar. Arşivli ve duraklatılmış alışkanlıkların alarmı her açılışta yeniden kuruluyordu; artık açılışta iptal ediliyor. Duraklat/devam, arşivden çıkar, ad/tür/program değişikliği alarmı eşitliyor. Program Android'e yeni `scheduleReminderDays` ile ISO gün listesi olarak gidiyor (eski köprüde 4 argümanlı metoda düşülüyor). Açılışta izin istenmiyor. "Üzerine yaz" yedek yüklemede eski alarmlar iptal ediliyor. |
 
-Testler: uygulama için 223 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
+| (son commit) | Tur kapanışı. Yeni tur bugün başlıyordu, bugünün kaydı eski turda kalıyordu: kart "yapılmadı", sayaç 0/1, widget ve partner özeti yanlış; 4 gün sonra `autoMiss` o günü yeni turda "missed" yapıp seriyi geriye dönük kırıyordu (ölçüldü: 11 → 4) ya da joker harcıyordu. Artık bugün işaretliyse yeni tur yarın başlıyor ve bugünü gösteren her yer `dayState` okuyor. |
+
+Testler: uygulama için 245 senaryo, Firebase kuralları için 59 senaryo. Hepsi geçiyor.
 Her düzeltme, düzeltme öncesi sürümde de çalıştırılarak gerçekten bir şeyi
 yakaladığı doğrulandı.
 
@@ -46,16 +48,11 @@ servis çalışanı) öncelik dışı. 23 Eylül'de yeniden denetlendi; aşağı
 
 ### A. Teknik hatalar (Android'de de geçerli)
 
-1. **Tur kapanınca bugünün kaydı kayboluyor.** `closeC()` bugünü de `h.history`'ye
-   taşıyıp `h.days`'i boşaltıyor. Ölçüldü: 7 günlük hedef bugün tamamlanıp tur
-   kapatılınca kartta yine "Tamamlandı / Yapamadım" çıkıyor, üstte "0/1 alışkanlık
-   tamamlandı" yazıyor (`dayState` "done" diyor). Aynı `h.days[td()]` okuması widget'a
-   (`pushWidgetData`), partner özetine (`fbSyncShared`) ve hatırlatıcı kontrolüne de gidiyor.
-2. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
+1. **Haftalık özetin başarı oranı programı yok sayıyor.** Hafta içi alışkanlığı için
    hafta sonu da paydaya giriyor, oran olduğundan düşük çıkıyor.
-3. **Partner özetindeki toplam** paylaşılanları değil bütün alışkanlıkları sayıyor
+2. **Partner özetindeki toplam** paylaşılanları değil bütün alışkanlıkları sayıyor
    (`fbSyncShared`, `total:act.length`, `done` da öyle).
-4. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
+3. **Reddedilen davetler** için yerel depoya sürekli anahtar yazılıyor, hiç temizlenmiyor.
 
 ### B. Android tarafında yapılması gerekenler (JS hatası değil, WebView ayarı)
 

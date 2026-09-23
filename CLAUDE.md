@@ -32,7 +32,13 @@ Bir alışkanlığın hedefi tamamlanınca **tur kapanır**: o turun günleri
   toplam tamamlanan, haftalık grafikler, haftalık özet.
 
 Yeni bir yer eklerken hangisi olduğuna karar ver. Doğrudan `h.days[tarih]` okumak
-neredeyse her zaman hatadır — tur kapanınca o veri orada olmaz.
+neredeyse her zaman hatadır — tur kapanınca o veri orada olmaz. **Bugünün durumu**
+da buna dahil: kartta, sayaçta, widget'ta hep `dayState(h, td())` oku.
+
+Turu kapatan gün eski tura aittir. `closeC()` bugün eski turda işaretliyse yeni turu
+**yarın** başlatır (`h.createdAt` yarın olur). O gün `td() < h.createdAt` doğrudur;
+`mkDn`/`mkMs`/`undoDn`/`widgetComplete` bu durumda yazmaz. Yazmalar (`h.days[td()]=...`)
+her zaman içinde bulunulan tura gider.
 
 Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 - `dayState(h, tarih)` — günün durumu, geçmiş turlar dahil
@@ -44,7 +50,7 @@ Yardımcılar (hepsi `index.html` içinde, `cD`'nin yakınında):
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (11 takım, 223 senaryo)
+bash tests/calistir.sh            # uygulama testleri (12 takım, 245 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 ```
 
@@ -72,6 +78,9 @@ Bunların hepsi bu depoda gerçekten yaşandı:
 5. **Sayfa `load` olayını bekleme.** Firebase betikleri dinamik ekleniyor; asılı
    kalan bir betik `load`'u bekletir. Firebase CDN'lerini taklit eden testlerde
    `goto(url,{waitUntil:'domcontentloaded'})` kullan (bkz. `tests/test_fbload.js`).
+   Günler geçince olan hatalar için saati `page.clock.setFixedTime` ile ilerlet ve sayfayı
+   yenile; veriyi geriye kaydırarak taklit etmek `autoMiss`'in gerçek yolunu atlayabilir
+   (bkz. `tests/test_turkapanis.js`).
 6. **Çevrimdışını `setOffline` ile taklit etme.** Servis çalışanının isteklerini her
    zaman kesmiyor, test sahte geçer. `tests/test_offline.js` yerel sunucuyu gerçekten
    kapatıyor; zayıf şebeke için isteği cevapsız bırakıyor.

@@ -961,7 +961,7 @@
       else{syncPct=Math.min(100,Math.round(dn/h.targetDays*100))}
       payload[h.id]={
         name:h.name,type:h.type,color:h.color,icon:h.icon||'book',
-        targetDays:h.targetDays,todayDone:h.days[td()]==='done',
+        targetDays:h.targetDays,todayDone:dayState(h,td())==='done',
         streak:cS(h),pct:syncPct,
         lastUpdate:new Date().toISOString()
       };
@@ -969,7 +969,7 @@
     fbDB.ref('shared/'+S.roomId+'/'+fbUser.uid+'/habits').set(payload);
     fbDB.ref('shared/'+S.roomId+'/'+fbUser.uid+'/summary').set({
       name:S.user.name,avatar:S.user.avatar||'book',
-      done:act.filter(function(h){return h.days[td()]==='done'}).length,
+      done:act.filter(function(h){return dayState(h,td())==='done'}).length,
       total:act.length,lastSeen:td()
     });
   }
@@ -1390,7 +1390,7 @@
     var html='';
     // Header — greeting + stats
     var roomLabel=mode==='couple'?'Eş / Sevgili':'Aile / Dost';
-    var doneShared=myShared.filter(function(h){return h.days[todayS]==='done'}).length;
+    var doneShared=myShared.filter(function(h){return dayState(h,todayS)==='done'}).length;
     html+='<div style="padding:12px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">';
     html+='<div style="flex:1;min-width:0">';
     html+='<div class="m-date">'+getDateStr()+'</div>';
@@ -1434,7 +1434,7 @@
       var oPct;
       oPct=(hasQuit&&!hasGain)?pctOf(tRem,tT):pctOf(tD,tT);
       var oPctLabel=hasQuit&&!hasGain?'ortak temizlik':'ortak ilerleme';
-      var doneShared=myShared.filter(function(h){return h.days[todayS]==='done'}).length;
+      var doneShared=myShared.filter(function(h){return dayState(h,todayS)==='done'}).length;
       var ringCls=hasQuit&&!hasGain?'ring-pct-q':'ring-pct-g';
       html+='<div class="ring-ctr" style="width:120px"><div class="ring-pct" style="font-size:32px"><span class="'+ringCls+'">%'+oPct+'</span></div><div class="ring-lbl">'+oPctLabel+'</div></div>';
       html+='</div></div></div>';
@@ -1458,7 +1458,7 @@
 
     // === ALL DONE BANNER ===
     if(myShared.length>0){
-      var doneAll=myShared.every(function(h){return h.days[todayS]==='done'});
+      var doneAll=myShared.every(function(h){return dayState(h,todayS)==='done'});
       if(doneAll){
         html+='<div class="all-done-banner mixed"><div class="adb-emoji"><span class="i" style="width:28px;height:28px;color:var(--honey)">'+IC.crown+'</span></div><div class="adb-text"><strong>Ortak hedefler tamam!</strong><span>Harika bir ekip çalışması.</span></div></div>';
       }
@@ -1481,7 +1481,7 @@
           html+='</div></div></div>';
           return;
         }
-        var isDn=h.days[todayS]==='done',isMs=h.days[todayS]==='missed';
+        var isDn=dayState(h,todayS)==='done',isMs=dayState(h,todayS)==='missed';
         var dn=cD(h),streak=cS(h);
         var pct,displayNum;
         if(h.type==='gain'){pct=Math.min(100,Math.round(dn/h.targetDays*100));displayNum=pct}
@@ -1544,7 +1544,7 @@
     // === STREAK KARŞILAŞTIRMA ===
     if(myShared.length>0&&S.partnerData&&Object.keys(S.partnerData).length){
       var myBestS=0;myShared.forEach(function(h){var s=cS(h);if(s>myBestS)myBestS=s});
-      var myDoneToday=myShared.filter(function(h){return h.days[todayS]==='done'}).length;
+      var myDoneToday=myShared.filter(function(h){return dayState(h,todayS)==='done'}).length;
       var comparisons=[];
       comparisons.push({name:S.user.name||'Sen',streak:myBestS,done:myDoneToday,total:myShared.length,isMe:true});
       Object.keys(S.partnerData).forEach(function(uid){
@@ -1826,7 +1826,8 @@
       if(!h)return;
       var todayS=td();
       if(dateStr!==todayS)return;
-      if(h.days[todayS]==='done')return;
+      if(todayS<h.createdAt)return;   // bugun kapanmis tura ait
+      if(dayState(h,todayS)==='done')return;
       h.days[todayS]='done';
       sv();renderMain(); // hedef/kilometre tasi kontrolu renderMain icinde
       toast((h.type==='quit'?'Temiz kaldın':'Tamamlandı')+' (Widget)');
@@ -2146,7 +2147,7 @@
       var act=_selfHabits();
       var gainAct=act.filter(function(h){return h.type==='gain'});
       var quitAct=act.filter(function(h){return h.type==='quit'});
-      var dn=act.filter(function(h){return h.days[td()]==='done'}).length;
+      var dn=act.filter(function(h){return dayState(h,td())==='done'}).length;
       document.getElementById('mDate').textContent=getDateStr();
       document.getElementById('mGrt').textContent=getGrt()+', '+esc(S.user.name);
       // Sub
@@ -2198,8 +2199,8 @@
     function renderAllDoneBanner(act,dn){
       var el=document.getElementById('allDoneBanner');
       if(!act.length||dn<act.length){el.innerHTML='';return}
-      var gainDone=act.filter(function(h){return h.type==='gain'&&h.days[td()]==='done'}).length;
-      var quitDone=act.filter(function(h){return h.type==='quit'&&h.days[td()]==='done'}).length;
+      var gainDone=act.filter(function(h){return h.type==='gain'&&dayState(h,td())==='done'}).length;
+      var quitDone=act.filter(function(h){return h.type==='quit'&&dayState(h,td())==='done'}).length;
       var gainTotal=act.filter(function(h){return h.type==='gain'}).length;
       var quitTotal=act.filter(function(h){return h.type==='quit'}).length;
       var cls='mixed',iconHtml='<span class="i" style="width:28px;height:28px;color:var(--lav)">'+IC.star+'</span>',title='Bugünü tamamladın!',sub='Tüm alışkanlıklar işaretlendi.';
@@ -2329,7 +2330,7 @@
             // Inner shadow overlay
             html+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="url(#rgS'+idx+')" stroke-width="'+(rw-1)+'" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+off+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
           }
-          if(pct<1&&!h.days[td()]){var ta=(-90+pct*360)*Math.PI/180;html+='<circle cx="'+(cx+r*Math.cos(ta))+'" cy="'+(cy+r*Math.sin(ta))+'" r="'+(rw/2.5)+'" fill="'+h.color+'" opacity=".4"><animate attributeName="opacity" values=".15;.55;.15" dur="2s" repeatCount="indefinite"/></circle>';}
+          if(pct<1&&!dayState(h,td())){var ta=(-90+pct*360)*Math.PI/180;html+='<circle cx="'+(cx+r*Math.cos(ta))+'" cy="'+(cy+r*Math.sin(ta))+'" r="'+(rw/2.5)+'" fill="'+h.color+'" opacity=".4"><animate attributeName="opacity" values=".15;.55;.15" dur="2s" repeatCount="indefinite"/></circle>';}
         } else {
           // QUIT: başlangıçta TAM DOLU, temiz kaldıkça azalır
           var rem=Math.max(0,h.targetDays-doneN);
@@ -2344,7 +2345,7 @@
           html+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="url(#rgH'+idx+')" stroke-width="'+(rw-2)+'" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+qoff+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
           // Inner shadow
           html+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="url(#rgS'+idx+')" stroke-width="'+(rw-1)+'" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+qoff+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
-          if(fullPct>0&&fullPct<1&&!h.days[td()]){
+          if(fullPct>0&&fullPct<1&&!dayState(h,td())){
             var da=(-90+(1-fullPct)*360)*Math.PI/180;
             html+='<circle cx="'+(cx+r*Math.cos(da))+'" cy="'+(cy+r*Math.sin(da))+'" r="'+(rw/2.5)+'" fill="'+h.color+'" opacity=".4"><animate attributeName="opacity" values=".15;.55;.15" dur="2s" repeatCount="indefinite"/></circle>';
           }
@@ -2691,7 +2692,7 @@
         var act=_selfHabits();
         if(!S.widgetHabits||!S.widgetHabits.length)S.widgetHabits=act.map(function(h){return h.id;});
         var widgetHabits=S.widgetHabits.map(function(id){return fH(id);}).filter(Boolean);
-        var dn=act.filter(function(h){return h.days[td()]==='done'}).length;
+        var dn=act.filter(function(h){return dayState(h,td())==='done'}).length;
         var bestStreak=0;act.forEach(function(h){var s=cS(h);if(s>bestStreak)bestStreak=s;});
         var payload={
           date:td(),done:dn,total:act.length,streak:bestStreak,
@@ -2701,7 +2702,7 @@
             var pct=h.type==='gain'
               ?Math.min(100,Math.round(doneN/h.targetDays*100))
               :Math.min(100,Math.round(Math.max(0,h.targetDays-doneN)/h.targetDays*100));
-            return{id:h.id,name:h.name,color:h.color,pct:pct,done:h.days[td()]==='done',type:h.type};
+            return{id:h.id,name:h.name,color:h.color,pct:pct,done:dayState(h,td())==='done',type:h.type};
           })
         };
         HalkaBridge.updateWidget(JSON.stringify(payload));
@@ -2715,7 +2716,7 @@
       if(!act.length)return'<div style="padding:20px;color:var(--tx3);font-size:13px;text-align:center;border:1px dashed var(--bd2);border-radius:16px;margin-bottom:12px">Alışkanlık ekleyince<br>widget önizlemesi görünür</div>';
       if(!S.widgetHabits||!S.widgetHabits.length)S.widgetHabits=act.map(function(h){return h.id;});
       var wHabits=S.widgetHabits.map(function(id){return fH(id);}).filter(Boolean);
-      var dn=act.filter(function(h){return h.days[td()]==="done"}).length;
+      var dn=act.filter(function(h){return dayState(h,td())==='done'}).length;
       var bestStreak=0;
       act.forEach(function(h){var s=cS(h);if(s>bestStreak)bestStreak=s;});
       var allDone=dn===act.length&&act.length>0;
@@ -2725,7 +2726,7 @@
         var pct=h.type==="gain"
           ?Math.min(100,Math.round(doneN/h.targetDays*100))
           :Math.min(100,Math.round(Math.max(0,h.targetDays-doneN)/h.targetDays*100));
-        var isDone=h.days[td()]==="done";
+        var isDone=dayState(h,td())==='done';
         var r=sz*0.38,circ=2*Math.PI*r,off=circ*(1-pct/100);
         var col=isDone?h.color:rga(h.color,.7);
         var sw=Math.max(sz*0.1,4);
@@ -2810,7 +2811,7 @@
       html+='<div class="sc"><div>';
       act.forEach(function(h){
         var isOn=S.widgetHabits.indexOf(h.id)>=0;
-        var isDone=h.days[td()]==="done";
+        var isDone=dayState(h,td())==='done';
         var doneN=cD(h);
         var pct=h.type==="gain"
           ?Math.min(100,Math.round(doneN/h.targetDays*100))
@@ -2895,7 +2896,7 @@
           html+='</div></div></div>';
           return;
         }
-        var isDn=h.days[todayS]==='done',isMs=h.days[todayS]==='missed',dn=cD(h),streak=cS(h);
+        var isDn=dayState(h,todayS)==='done',isMs=dayState(h,todayS)==='missed',dn=cD(h),streak=cS(h);
         var pct,displayNum;
         if(h.type==='gain'){
           pct=Math.min(100,Math.round(dn/h.targetDays*100));
@@ -2960,7 +2961,7 @@
       setTimeout(initDrag,10);
     }
 
-    function undoDn(id){if(_mkLock)return;_mkLock=true;setTimeout(function(){_mkLock=false},300);var h=fH(id);if(!h)return;delete h.days[td()];sv();toast('Geri alındı');setTimeout(renderMain,50)}
+    function undoDn(id){if(_mkLock)return;_mkLock=true;setTimeout(function(){_mkLock=false},300);var h=fH(id);if(!h)return;if(td()<h.createdAt){toast('Bugün tamamlanan tura ait, geri alınamaz');return}delete h.days[td()];sv();toast('Geri alındı');setTimeout(renderMain,50)}
 
     function spawnBurst(e){var x,y;if(e&&e.clientX){x=e.clientX;y=e.clientY}else if(e&&e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY}else if(e&&e.target){var r=e.target.getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2}else{x=window.innerWidth/2;y=window.innerHeight/2}var cols=['var(--mint)','var(--lav)','var(--honey)','var(--sky)','var(--peach)','var(--rose)'];for(var i=0;i<12;i++){var p=document.createElement('div');p.className='burst';var angle=Math.random()*Math.PI*2;var dist=30+Math.random()*50;p.style.cssText='left:'+(x-4)+'px;top:'+(y-4)+'px;background:'+cols[i%cols.length]+';--bx:'+(Math.cos(angle)*dist)+'px;--by:'+(Math.sin(angle)*dist-20)+'px;animation-delay:'+(Math.random()*.1)+'s;width:'+(5+Math.random()*6)+'px;height:'+(5+Math.random()*6)+'px';document.body.appendChild(p);setTimeout(function(){p.remove()},900)}}
 
@@ -2982,17 +2983,19 @@
     function mkDn(id,e){
       if(_mkLock)return;_mkLock=true;setTimeout(function(){_mkLock=false},300);
       var h=fH(id);if(!h)return;
+      if(td()<h.createdAt)return;   // bugun kapanmis tura ait
       spawnBurst(e);
       var prev=h.days[td()];
       h.days[td()]='done';sv();
       showU(h.type==='gain'?'Tamamlandı olarak kaydedildi':'Temiz kaldım olarak kaydedildi',function(){if(prev)h.days[td()]=prev;else delete h.days[td()];sv();renderMain()});
       // Room all-done confetti
-      if(_isShared(h)){var sh=_sharedHabits();if(sh.length>0&&sh.every(function(x){return x.days[td()]==='done'})){setTimeout(spConf,300)}}
+      if(_isShared(h)){var sh=_sharedHabits();if(sh.length>0&&sh.every(function(x){return dayState(x,td())==='done'})){setTimeout(spConf,300)}}
       setTimeout(function(){var fl=document.getElementById('flash-'+id);if(fl){fl.style.background=h.color;fl.classList.add('go')}renderMain()},80);
     }
     function mkMs(id){
       if(_mkLock)return;_mkLock=true;setTimeout(function(){_mkLock=false},300);
       var h=fH(id);if(!h)return;
+      if(td()<h.createdAt)return;   // bugun kapanmis tura ait
       var prev=h.days[td()];
       h.days[td()]='missed';sv();
       showU(h.type==='quit'?'Düştüm olarak kaydedildi':'Yapamadım olarak kaydedildi',function(){if(prev)h.days[td()]=prev;else delete h.days[td()];sv();renderMain()});
@@ -3036,7 +3039,12 @@
       // Save round history
       if(!h.history)h.history=[];
       h.history.push({round:h.round,days:JSON.parse(JSON.stringify(h.days)),completedAt:td(),createdAt:h.createdAt,targetDays:h.targetDays});
-      h.round++;h.days={};h.createdAt=td();sv();toast(h.name+' — '+h.round+'. tur başladı!')}renderMain()}
+      // Bugun bu turda isaretliyse bugun bu tura aittir, yeni tur yarin baslar.
+      // Eskiden yeni tur bugun basliyordu: bugun yeni turda bos kaliyor, kart
+      // "yapilmadi" gosteriyor, birkac gun sonra autoMiss onu "missed" yapip
+      // seriyi geriye donuk kiriyor (ya da joker harciyordu).
+      var yb=new Date(td()+'T00:00:00');if(h.days[td()])yb.setDate(yb.getDate()+1);
+      h.round++;h.days={};h.createdAt=ds(yb);sv();toast(h.name+' — '+h.round+'. tur başladı!')}renderMain()}
     function spConf(){document.querySelectorAll('.conf').forEach(function(c){c.remove()});var cs=['#e8a0c8','#a0c8e8','#a0e8c8','#e8c8a0','#c8a0e8','#f0d88e','#f0b8a5'];for(var i=0;i<40;i++){var el=document.createElement('div');el.className='conf';el.style.left=Math.random()*100+'vw';el.style.top=50+Math.random()*40+'vh';el.style.background=cs[Math.floor(Math.random()*cs.length)];el.style.animationDelay=Math.random()*.7+'s';el.style.animationDuration=1.2+Math.random()*1.5+'s';el.style.width=6+Math.random()*10+'px';el.style.height=6+Math.random()*10+'px';el.style.borderRadius=Math.random()>.5?'50%':'3px';document.body.appendChild(el);setTimeout(function(){el.remove()},3500)}}
 
     function renderAdd(){
@@ -3395,7 +3403,7 @@
       var now=new Date(),hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0'),cur=hh+':'+mm;
       S.habits.forEach(function(h){
         if(!remActive(h)||!isScheduledDay(h,td()))return;
-        if(h.reminder===cur&&!h.days[td()]){
+        if(h.reminder===cur&&!dayState(h,td())){
           var notifKey='notif_'+h.id+'_'+td();
           if(!sessionStorage.getItem(notifKey)){
             sessionStorage.setItem(notifKey,'1');
