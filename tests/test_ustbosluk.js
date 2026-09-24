@@ -46,7 +46,7 @@ const run = async (url) => {
     if(ad==='kutlama'||ad==='kilometre')continue;   // tam ekran katman, icerik ortada
     await p.evaluate(`(${hazir.toString()})()`);
     await olc(ad);
-    await p.evaluate(()=>{document.querySelectorAll('[id$=Modal]').forEach(function(m){m.remove()})});
+    await p.evaluate(()=>{if(window.pencereKapat)pencereKapat();document.querySelectorAll('[id$=Modal]').forEach(function(m){m.remove()})});
   }
   // Odali ana ekran: sekme cubugu ustte
   await p.evaluate(()=>{S.roomId='r';S.roomCode='ABC234';S.roomType='couple';S.sharedHabits=[S.habits[0].id];sv();navTo('main');renderModeTabBar();

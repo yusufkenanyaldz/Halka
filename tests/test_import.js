@@ -1,5 +1,5 @@
 // Yedek ice aktarma (birlestirme modu): kimlik cakismasi ve 8 aliskanlik siniri.
-// impD() gercek dosya secici, confirm/alert pencereleri ve sayfa yenilemesiyle
+// impD() gercek dosya secici, uygulama ici pencereler (#pencere) ve sayfa yenilemesiyle
 // uctan uca suruluyor; ic yardimcilara dayanmiyor, bu yuzden duzeltme oncesi
 // surumde de ayni sekilde calisir.
 const fs = require('fs'), path = require('path'), os = require('os');
@@ -31,18 +31,17 @@ const run = async (url) => {
     await p.evaluate(h=>{S.habits=h;S.milestones={};sv()}, existing);
     const f = path.join(tmp, 'yedek'+(n++)+'.json');
     fs.writeFileSync(f, JSON.stringify(backup));
-    alerts=[]; let confirms=0;
-    const onDialog = async d=>{
-      if(d.type()==='confirm'){confirms++;
-        // 1. "Devam?" -> evet, 2. "Uzerine yazsin mi?" -> hayir (birlestir)
-        if(confirms===1)await d.accept(); else await d.dismiss();
-      } else {alerts.push(d.message()); await d.accept();}
-    };
-    p.on('dialog', onDialog);
+    alerts=[];
+    // Uygulama ici pencere: "Mevcutlara Ekle" (birlestir); ardindan bilgi penceresi cikarsa metni alinir, "Tamam".
     const [fc] = await Promise.all([p.waitForEvent('filechooser'), p.evaluate(()=>impD())]);
-    await Promise.all([p.waitForNavigation(), fc.setFiles(f)]);
+    await fc.setFiles(f);
+    await p.waitForSelector('#pencere [data-sec=ekle]');
+    const nav = p.waitForNavigation();
+    await p.click('#pencere [data-sec=ekle]');
+    await Promise.race([nav, p.waitForSelector('#pencere .pn-met',{timeout:3000})
+      .then(async e=>{alerts.push(await e.innerText()); await p.click('#pencere [data-sec=evet]')}).catch(()=>{})]);
+    await nav;
     await p.waitForTimeout(1500);
-    p.off('dialog', onDialog);
     return p.evaluate(()=>({
       habits:S.habits.map(h=>({id:h.id,name:h.name,archived:!!h.archived,days:h.days})),
       ms:S.milestones||{},

@@ -21,7 +21,7 @@ const run = async (url) => {
       S.habits=[{id:'a',name:'Spor',type:'gain',targetDays:21,color:CL[0],createdAt:td(),days:{},round:1,history:[],notes:{}}];
       S.roomId='r';S.roomCode='SFZ559';S.roomType='couple';S.sharedHabits=[];sv()});
     await p.reload(); await p.waitForTimeout(1000);
-    await p.evaluate(()=>{window.confirm=function(){return true};_activeMode='self';setMode('couple')}); await p.waitForTimeout(900);
+    await p.evaluate(()=>{_activeMode='self';setMode('couple')}); await p.waitForTimeout(900);
     return p;
   }
   const tikla=(p,re,kap)=>p.evaluate(([re,kap])=>{var b=[].find.call(document.querySelectorAll(kap+' button'),function(x){return new RegExp(re).test(x.textContent)&&x.offsetParent});
@@ -71,6 +71,7 @@ const run = async (url) => {
   {
     const p=await ac();
     add('ODA EKRANI: "Odadan Ayril" dugmesi var', true, await tikla(p,'^Odadan Ayrıl$','#roomModeContent'));
+    await p.evaluate(()=>document.querySelector('#pencere [data-sec=evet]').click());
     await p.waitForTimeout(900);
     const d=await durum(p);
     add('AYRILINCA (oda ekranindan): bireysel gorunum, sekme yok', 's-main|true|false|false', [d.ekran,d.bireysel,d.oda,d.sekme].join('|'));
@@ -79,15 +80,15 @@ const run = async (url) => {
   }
   {
     const p=await ac();
-    await p.evaluate(()=>{navTo('settings');leaveRoom();navTo('main')}); await p.waitForTimeout(900);
+    await p.evaluate(()=>{navTo('settings');leaveRoom();document.querySelector('#pencere [data-sec=evet]').click();navTo('main')}); await p.waitForTimeout(900);
     const d=await durum(p);
     add('AYRILINCA (ayarlardan) ana ekran: bireysel gorunum', 'true|false|false', [d.bireysel,d.oda,d.sekme].join('|'));
     await p.close();
   }
   {
     const p=await ac();
-    await p.evaluate(()=>{window.confirm=function(){return false}});
-    await tikla(p,'^Odadan Ayrıl$','#roomModeContent'); await p.waitForTimeout(500);
+    await tikla(p,'^Odadan Ayrıl$','#roomModeContent'); await p.waitForTimeout(300);
+    await p.evaluate(()=>document.querySelector('#pencere [data-sec=hayir]').click()); await p.waitForTimeout(300);
     add('REG vazgecince oda kalir', 'r|true', await p.evaluate(()=>S.roomId+'|'+(getComputedStyle(document.getElementById('roomModeContent')).display!=='none')));
     await p.close();
   }

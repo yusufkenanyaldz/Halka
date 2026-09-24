@@ -44,6 +44,8 @@ const EKRANLAR = [
   ['istatistik-oda', ()=>{S.sharedHabits=S.habits.filter(function(h){return!h.archived&&!h.paused}).slice(0,2).map(function(h){return h.id});navTo('stats')}, [0,700,1400,2200]],
   ['kutlama',    ()=>{delete S.roomId;delete S.roomCode;delete S.roomType;navTo('main');celeb(S.habits[0])}, [0]],
   ['kilometre',  ()=>{document.getElementById('cOv').classList.remove('show');showMilestone('Spor',MILESTONES[1])}, [0]],
+  // Uygulama ici pencere (confirm/alert yerine): en kalabalik hali, uc dugmeli silme sorusu
+  ['pencere',    ()=>{document.getElementById('msOv').classList.remove('show');navTo('settings');dI=S.habits[0].id;delC()}, [0]],
 ];
 
 // Her ekrani acar, her kaydirma konumunda denetim(sayfa ici fonksiyon) calistirir.
@@ -78,7 +80,7 @@ const gez = async (url, {tema='dark', genislik=360, yukseklik=800}, denetim) => 
       r.kalanlar.forEach(k=>{const key=k.metin+'|'+k.sinif; if(!kalan.has(key))kalan.set(key,k)});
     }
     ekranlar[ad]={toplam, kalanlar:[...kalan.values()]};
-    await p.evaluate(()=>{document.querySelectorAll('[id$=Modal]').forEach(function(m){m.remove()});['cOv','msOv'].forEach(function(i){var o=document.getElementById(i);if(o)o.classList.remove('show')})});
+    await p.evaluate(()=>{if(window.pencereKapat)pencereKapat();document.querySelectorAll('[id$=Modal]').forEach(function(m){m.remove()});['cOv','msOv'].forEach(function(i){var o=document.getElementById(i);if(o)o.classList.remove('show')})});
   }
   await b.close();
   return {ekranlar, errs};

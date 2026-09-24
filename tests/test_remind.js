@@ -72,7 +72,7 @@ const run = async (url) => {
   await sifirla(p); await p.evaluate(()=>unarchiveH('arsiv'));
   add('ARSIVDEN CIKAR: alarm yeniden kurulur', 'arsiv', sadece(await cagrilar(p),'scheduleReminderDays').map(idOf).join(','));
   // Arsivle
-  await sifirla(p); await p.evaluate(()=>{window.confirm=()=>true;archiveH('arsiv')});
+  await sifirla(p); await p.evaluate(()=>{archiveH('arsiv');document.querySelector('#pencere [data-sec=evet]').click()});
   add('ARSIVLE: alarm iptal edilir', 'cancelReminder(arsiv)', (await cagrilar(p)).join(' '));
 
   // Program degisir -> yeni gunlerle yeniden kurulur
@@ -102,16 +102,17 @@ const run = async (url) => {
   const fs=require('fs'),os=require('os');
   const f=path.join(fs.mkdtempSync(path.join(os.tmpdir(),'halka-rem-')),'y.json');
   fs.writeFileSync(f,JSON.stringify({v:3,ob:true,user:{name:'Y'},habits:[hb('yeni1','Yeni',{reminder:'06:00'})]}));
-  p.on('dialog',d=>d.accept());   // 1. "Devam?" evet, 2. "Uzerine yaz?" evet
+  // Uygulama ici pencere: "Uzerine Yaz", sonra onay "Uzerine Yaz"
   const [fc]=await Promise.all([p.waitForEvent('filechooser'),p.evaluate(()=>impD())]);
-  await Promise.all([p.waitForNavigation(),fc.setFiles(f)]); await p.waitForTimeout(1500);
+  await fc.setFiles(f); await p.waitForSelector('#pencere [data-sec=uzerine]'); await p.click('#pencere [data-sec=uzerine]');
+  await Promise.all([p.waitForNavigation(),p.click('#pencere [data-sec=evet]')]); await p.waitForTimeout(1500);
   var c3=await cagrilar(p);
   add('YEDEK UZERINE YAZ: eski alarmlar iptal edilir', true, ['hafta','ozel','yok'].every(id=>sadece(c3,'cancelReminder').map(idOf).includes(id)));
   add('YEDEK UZERINE YAZ: yenisi kurulur', true, sadece(c3,'scheduleReminderDays').map(idOf).includes('yeni1'));
 
   // REGRESYON: silme ve hatirlatici kaldirma iptal eder
   await p.evaluate(()=>{S.habits.push({id:'sil',name:'Sil',type:'gain',targetDays:30,color:CL[0],createdAt:td(),days:{},round:1,history:[],notes:{},reminder:'05:00'});sv()});
-  await sifirla(p); await p.evaluate(()=>{window.confirm=()=>true;dI='sil';delC()});
+  await sifirla(p); await p.evaluate(()=>{dI='sil';delC();document.querySelector('#pencere [data-sec=evet]').click()});
   add('REG silince iptal', true, sadece(await cagrilar(p),'cancelReminder').map(idOf).includes('sil'));
   await sifirla(p); await p.evaluate(()=>{openDet('yeni1');delReminder('yeni1')});
   add('REG hatirlatici kaldirilinca iptal', 'cancelReminder(yeni1)', (await cagrilar(p)).join(' '));

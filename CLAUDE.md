@@ -9,6 +9,11 @@ bildirim ve widget özellikleri devreye girer, yoksa sessizce atlanır.
 Her şey `index.html` içinde:
 - `<style>` bölümü: tema değişkenleri `:root` altında, açık tema `body.light` ile
 - `<body>`: ekranlar `.screen` sınıfıyla, `goScreen()` ile değiştirilir
+  - **`confirm()`/`alert()` kullanma**: sistem penceresi açar, temaya uymaz. Uygulama içi pencere:
+    `sor({baslik, metin, evet, hayir, tehlike, ok, iptal})`, `bilgi(baslik, metin, fn)`, çok seçenekli
+    için `pencere({baslik, metin, tur, dugmeler:[{yazi, tur:'ana'|'tehlike'|'ikincil', sec, fn}]})`.
+    Beklemez: onaydan sonra yapılacak işi `ok`/`fn`'e koy. Geri tuşu, dışarı dokunma, Esc = vazgeç.
+    Testte: `document.querySelector('#pencere [data-sec=evet]').click()` (`tests/test_pencere.js`).
   - Ayarların alt görünümleri (widget, oda kur/katıl/paylaş) `#seBox` içine çizilir.
     Yeni bir alt görünüm `setAltAc('ad')` ile başlasın, başlığı `setAltBaslik(...)` olsun,
     kapatan her düğme `setAltKapat()` çağırsın; Android geri tuşu da buradan geçer.
@@ -76,7 +81,7 @@ Kullanıcı verisini silen bir "temizlik" yazma: gün kayıtları küçüktür v
 ## Test
 
 ```bash
-bash tests/calistir.sh            # uygulama testleri (37 takım, 1040 senaryo)
+bash tests/calistir.sh            # uygulama testleri (38 takım, 1091 senaryo)
 bash tests/calistir.sh firebase   # Firebase güvenlik kuralları (59 senaryo)
 bash tests/calistir.sh android    # android/: XML, kaynak bağlantıları, Java derlemesi, hatırlatıcı
 ```
@@ -145,7 +150,7 @@ açar ve `widgetComplete(id, td())` çağırır.
 
 **Geri tuşu (Android → JS):** `onBackPressed` içinde
 `webView.evaluateJavascript("handleBack()") { v -> if (v == "false") finish() }`.
-`handleBack()` önce açık katmanı kapatır (davet, kilometre taşı, kutlama), sonra ayarların
+`handleBack()` önce açık katmanı kapatır (uygulama içi pencere, davet, kilometre taşı, kutlama), sonra ayarların
 alt görünümünü, tanıtım adımlarını, ekran geçmişini; geri alınacak bir şey yoksa `false`
 döner. Yeni bir katman ya da alt adım eklersen buraya da ekle (`tests/test_geritusu.js`).
 

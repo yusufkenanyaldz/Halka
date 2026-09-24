@@ -48,7 +48,7 @@ const run = async (url) => {
     add('RET: yenilemeden sonra da gelmez', 'yok', await davet(p,['h1']));
     add('REG baska aliskanligin daveti gelir', 'Ortak h2', await davet(p,['h1','h2']));
     // Odadan ayrilma: o odanin retleri gider
-    await p.evaluate(()=>{window.confirm=function(){return true};leaveRoom()});
+    await p.evaluate(()=>{leaveRoom();document.querySelector('#pencere [data-sec=evet]').click()});
     add('ODADAN AYRILINCA: ret silinir', '{}', await red(p));
     await p.close();
   }
@@ -66,7 +66,7 @@ const run = async (url) => {
     add('TASIMA: S.redDavet', '{"R0":{"x":1},"R1":{"h1":1,"h2":1},"R9":{"zz":1}}', await red(p));
     add('TASIMA: tasinan ret gecerli', 'yok', await davet(p,['h1']));
     // Tum verileri sil: hicbir ret izi kalmaz
-    await Promise.all([p.waitForNavigation(),p.evaluate(()=>{window.confirm=function(){return true};clrAll()})]);
+    await Promise.all([p.waitForNavigation(),p.evaluate(()=>{clrAll();document.querySelector('#pencere [data-sec=evet]').click();document.querySelector('#pencere [data-sec=evet]').click()})]);
     await p.waitForTimeout(800);
     add('TUM VERILERI SIL: ret anahtari kalmaz', 0, await anahtar(p));
     add('TUM VERILERI SIL: S.redDavet yok', '{}', await red(p));

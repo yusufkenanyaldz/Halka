@@ -38,9 +38,9 @@ const run = async (url) => {
   // --- 1. Onboarding ---
   {
     const p=await ac('S.habits=[mk()]');
-    const r=await p.evaluate(()=>{navTo('settings');var msg='';var eski=window.confirm;window.confirm=function(m){msg=m;return false};
+    const r=await p.evaluate(()=>{navTo('settings');var msg='';
       var si=[].slice.call(document.querySelectorAll('#seBox .si')).find(function(e){return /Tanıtım|Onboarding/.test(e.textContent)});
-      if(si)si.click();window.confirm=eski;
+      if(si)si.click();var pn=document.getElementById('pencere');msg=pn?pn.innerText:'';pencereKapat();
       return {ayar:/Onboarding/i.test(document.getElementById('s-settings').textContent), madde:si?si.textContent.replace('›','').trim():'', onay:msg}});
     add('AYARLAR: "Onboarding" gecmez', false, r.ayar);
     add('AYARLAR: madde Turkce', 'Tanıtımı Tekrar Göster', r.madde);

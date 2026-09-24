@@ -69,7 +69,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
     res.push({t:'REG history yokken bu hafta bugun', beklenen:1, cikan:getWeekData(0)[bugunIdx]});
 
     // === REGRESYON: missed gun grafige girmez ===
-    reset(13,14); h.history=[]; fill(13,0); h.days[dstr(3)]='missed'; // 3 gun once = gecen hafta
+    // Gecen haftanin cumasi (bugunden n+3 gun once; n = pazartesiden beri gecen gun). Eskiden
+    // "3 gun once" yaziyordu: yalniz pazartesi-carsamba gecen haftaya dusuyordu, persembe kaliyordu.
+    var gecenCuma=(function(){var n=new Date().getDay();n=n===0?6:n-1;return n+3})();
+    reset(13,14); h.history=[]; fill(13,0); h.days[dstr(gecenCuma)]='missed';
     var wd=getWeekData(1);
     res.push({t:'REG missed gun grafikte 0 (gecen hafta 7 yerine 6)', beklenen:6, cikan:wd.reduce(function(a,c){return a+c},0)});
 

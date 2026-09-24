@@ -47,7 +47,7 @@ const run = async (url) => {
       var eski=new Date(td()+'T00:00:00');eski.setDate(eski.getDate()-120);h.notes[ds(eski)]='eski not';h.notes[td()]='yeni not';
       S.habits=[h];sv()`));
     const once=await p.evaluate(()=>cD(S.habits[0]));
-    await p.evaluate(()=>{navTo('settings');cleanStorage()}); await p.reload(); await p.waitForTimeout(900);
+    await p.evaluate(()=>{navTo('settings');cleanStorage();document.querySelector('#pencere [data-sec=evet]').click()}); await p.reload(); await p.waitForTimeout(900);
     add('DEPOLAMA: temizlik turun ilerlemesini dusurmez', once, await p.evaluate(()=>cD(S.habits[0])));
     add('DEPOLAMA: 90 gunden eski not silinir, yenisi kalir', 'yeni not', await p.evaluate(()=>Object.values(S.habits[0].notes).join('|')));
     add('DEPOLAMA: saglikliyken satir dokunulabilir degil', false, await p.evaluate(()=>{navTo('settings');var e=[].find.call(document.querySelectorAll('#seBox .si'),function(x){return /Depolama/.test(x.textContent)});return !!e.getAttribute('onclick')}));
@@ -85,11 +85,11 @@ const run = async (url) => {
       S.user={name:'Yusuf'};var cs=['Spor','Kitap','Su İçme','Yürüyüş','Koşu','Yoga','Ders'];
       S.habits=cs.map(function(n,i){return mk('h'+i,n,2,21,function(){return 'done'})});sv()`);
     const p=await ac(kur);
-    await p.evaluate(()=>{navTo('settings');resOB()}); await p.waitForTimeout(300);
+    await p.evaluate(()=>{navTo('settings');resOB();document.querySelector('#pencere [data-sec=evet]').click()}); await p.waitForTimeout(300);
     add('TANITIM: isim alani mevcut adla dolu', 'Yusuf', await p.evaluate(()=>document.getElementById('inpName').value));
     add('TANITIM: ilk ekranda geri tusu tanitimdan cikar (uygulamayi kapatmaz)', 'true|true|s-main', await p.evaluate(()=>{var r=handleBack();return r+'|'+S.ob+'|'+document.querySelector('.screen.active').id}));
     add('TANITIM: cikis kalici (yeniden acilista ana ekran)', 's-main', await p.reload().then(()=>p.waitForTimeout(900)).then(()=>p.evaluate(()=>document.querySelector('.screen.active').id)));
-    await p.evaluate(()=>{resOB();goOB(3);ob3Solo()}); await p.waitForTimeout(300);
+    await p.evaluate(()=>{resOB();document.querySelector('#pencere [data-sec=evet]').click();goOB(3);ob3Solo()}); await p.waitForTimeout(300);
     add('TANITIM: hic secmeden bitirilebilir (aliskanlik varken)', false, await p.evaluate(()=>document.getElementById('stBtn').disabled));
     const sec=await p.evaluate(()=>{[].forEach.call(document.querySelectorAll('#cBox .chip'),function(c){if(!/Spor|Kitap/.test(c.textContent))c.click()});return sP.length});
     add('TANITIM: 7 aktifken en cok 1 secilir', 1, sec);
@@ -134,7 +134,7 @@ const run = async (url) => {
   {
     const p=await ac(new Function(`${mk};${temel}S.habits=[mk('a','Spor',3,21,function(){return 'done'})];sv()`),{kopru:true});
     await p.exposeFunction('__son',s=>{p.__son=s});
-    await p.evaluate(()=>{window.addEventListener('beforeunload',function(){__son(JSON.stringify(__w[__w.length-1].habits))});clrAll()});
+    await p.evaluate(()=>{window.addEventListener('beforeunload',function(){__son(JSON.stringify(__w[__w.length-1].habits))});clrAll();document.querySelector('#pencere [data-sec=evet]').click();document.querySelector('#pencere [data-sec=evet]').click()});
     await p.waitForTimeout(900);
     add('SIL: Tum Verileri Sil widgeti bosaltir', '[]', p.__son);
     await p.close();
